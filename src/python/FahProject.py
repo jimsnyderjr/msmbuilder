@@ -94,12 +94,7 @@ class FahProject(object):
         Checks that the server comes back up without throwing an error -
         if it doesn't come up OK, sends mail to the project manager.
         """
-        
-<<<<<<< HEAD
-        raise NotImplementedError()
-=======
         raise NotImplementedError('Restarting WS not done yet! Sorry :(')
->>>>>>> c5f14b2e0dc1c6e454ac41f1dd0acd8d3bc10729
         
         # restart the server, wait 60s to let it come back up
         logger.warning("Restarting server: %s", self.work_server)
