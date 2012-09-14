@@ -120,7 +120,7 @@ def saveh(file, *args, **kwargs):
         for key, val in namedict.iteritems():
             if not isinstance(val, np.ndarray):
                 raise TypeError('Only numpy arrays can '
-                    'be saved: type(%s) is %s' % (key, type(key)))
+                    'be saved: type(%s) is %s' % (key, type(val)))
             try:
                 atom = tables.Atom.from_dtype(val.dtype)
             except ValueError:

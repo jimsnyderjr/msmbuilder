@@ -20,8 +20,10 @@ import os
 import numpy as np
 import yaml
 from msmbuilder import Trajectory
-import IPython as ip
-import msmio
+from msmbuilder import msmio
+from msmbuilder import utils
+import logging
+logger = logging.getLogger('project')
 
 class Project(object):
     mapping = {
@@ -165,3 +167,87 @@ class Project(object):
         traj = Trajectory.LoadTrajectoryFile(self.conf_filename)
         traj['XYZList'] = None
         return traj
+
+
+def convert_trajectories_to_lh5(pdb_filename, file_list,
+                                output_directory="./Trajectories", stride=1,
+                                atom_indices=None, input_file_type=".xtc",
+                                new_traj_root="trj", parallel=None):
+
+    """ Generate a directory of LH5 files containing trajectory data for use
+    in MSMBuilder. This function concatenates disparate data you may have
+    collected in xtc/dcd format into an organized, high-performance
+    file structure.
+
+    At its heart, this function is a map that takes a directory structure
+    of the form
+
+    root/
+      trajectory1/
+         part1.xtc
+         part2.xtc
+         ...
+
+      trajectory2/
+         part1.xtc
+         part2.xtc
+         ...
+
+      ...
+
+     The script spits out somthing like
+
+     Trajectories/
+       trj1.lh5 (containing all parts in trajectory1/)
+       trj2.lh5
+       ...
+    """
+
+    try:
+        os.mkdir(output_directory)
+    except OSError:
+        raise Exception("The directory %s already exists" % output_directory)
+
+    # set the parallelism functionality
+    if parallel == 'multiprocessing':
+        pool = multiprocessing.Pool()
+        mymap = pool.map
+    else:
+        mymap = map
+
+    if len(file_list) == 0:
+        raise RuntimeError('No conversion jobs found!')
+
+    lh5s = mymap(_convert_filename_list,
+            utils.uneven_zip(file_list, range(len(file_list)),
+                           [pdb_filename], [input_file_type], [output_directory],
+                           [new_traj_root], [stride], [atom_indices]))
+                           
+    return lh5s
+
+
+def _convert_filename_list( args):
+    """Convert filenames to HDF format. This needs to be a module-scope method so
+    that it can be mapped to properly"""
+
+    (file_list, i, pdb_filename, input_file_type,
+     output_directory, new_traj_root, stride, atom_indices) = args
+
+    if len(file_list) > 0:
+        logger.info(file_list)
+
+        if input_file_type =='.dcd':
+            traj = Trajectory.LoadFromDCD(file_list, PDBFilename=pdb_filename)
+        elif input_file_type == '.xtc':
+            traj = Trajectory.LoadFromXTC(file_list, PDBFilename=pdb_filename)
+        else:
+            raise Exception("Unknown file type: %s" % input_file_type)
+
+        traj["XYZList"] = traj["XYZList"][::stride]
+        if atom_indices != None:
+            trj['XYZList'] = traj['XYZList'][:,atom_indices,:]
+
+        lh5_fn = "%s/%s%d.lh5" % (output_directory, new_traj_root, i)
+        traj.Save(lh5_fn)
+        
+        return lh5_fn

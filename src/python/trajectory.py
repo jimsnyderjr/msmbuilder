@@ -25,8 +25,8 @@ import tables
 import numpy as np
 
 from msmbuilder import PDB
-from msmbuilder import Serializer
-from msmbuilder import ConformationBaseClass, Conformation
+from msmbuilder import msmio
+from msmbuilder.Conformation import ConformationBaseClass, Conformation
 from msmbuilder import xtc
 from msmbuilder import dcd
 import warnings
@@ -181,16 +181,15 @@ class Trajectory(ConformationBaseClass):
         Filename : str
             location to save to
         Precision : float, optional
-            I'm not really sure what this does (RTM 6/27).
+            Precision to save xyzlist
         """
-        Serializer.CheckIfFileExists(Filename)
-        key="XYZList"
-        X=self.pop(key)
-        Serializer.SaveToHDF(self,Filename)
-        Rounded=_ConvertToLossyIntegers(X,Precision)
-        self[key]=Rounded
-        Serializer.SaveEntryAsEArray(self[key],key,Filename=Filename)
-        self[key]=X
+        self.pop('IndexList')
+        
+        xyzlist = self.pop('XYZList')
+        rounded = _ConvertToLossyIntegers(xyzlist, Precision)
+        self['XYZList'] = rounded
+        msmio.saveh(Filename, **self)
+        self['XYZList'] = xyzlist
         
     def SaveToXTC(self,Filename,Precision=default_precision):
         """Dump the coordinates to XTC

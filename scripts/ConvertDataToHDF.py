@@ -24,7 +24,7 @@ import glob
 import cPickle
 
 from msmbuilder import FahProject
-from msmbuilder import Project
+from msmbuilder.project import convert_trajectories_to_lh5, Project
 from msmbuilder.utils import keynat
 import logging
 logger = logging.getLogger(__name__)
@@ -92,9 +92,8 @@ def run(projectfn, PDBfn, InputDir, source, mingen, stride, rmsd_cutoff,
         else: itype='.xtc'
 
         Flist = yield_trajectory_filelist_from_dir( InputDir, itype )
-        Project.convert_trajectories_to_lh5(PDBfn, Flist,
-                                            input_file_type=itype, stride=stride, 
-                                            parallel=parallel)
+        lh5_fns = convert_trajectories_to_lh5(PDBfn, Flist, input_file_type=itype,
+                                    stride=stride, parallel=parallel)
 
         # memory is a map: memory[ trajectory-dir ] = (lh5-file-path, num-files-in-traj-dir)
         memory = {}
@@ -102,8 +101,9 @@ def run(projectfn, PDBfn, InputDir, source, mingen, stride, rmsd_cutoff,
             num_raw_trajs = len( glob.glob( trj_dir + "/*" + itype ) )
             memory[ trj_dir ] = ( "trj%d.lh5" % i, num_raw_trajs )
 
-        Project.CreateProjectFromDir(Filename=projectfn, ConfFilename=PDBfn, 
-                                     TrajFileType=".lh5", initial_memory=cPickle.dumps( memory ))
+        proj = Project({'conf_filename': PDBFn, 'n_trajs': len(lh5_fns), 'traj_basename':
+                '.lh5', 'traj_path': 'Trajectories', 'traj_ext': itype})
+        proj.save(projectfn)
 
     # If FAH option, seach through a RUNs/CLONEs/frameS.xtc data structure
     elif source == 'fah':
