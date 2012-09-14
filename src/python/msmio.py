@@ -205,7 +205,7 @@ def loadh(file, name=Ellipsis, deferred=True):
     
         if deferred:
             # the deferred handler will close the file itself
-            return _deferred_factory(handle, node_iter)
+            return _deferred_factory(handle, [e.name for e in node_iter])
             
         else:
             result = {}
@@ -218,9 +218,9 @@ def loadh(file, name=Ellipsis, deferred=True):
     return result
 
 
-def _deferred_factory(handle, node_iter):
+def _deferred_factory(handle, node_names):
     """
-    Vodo-magic metaclass-y deferred pytables loading
+    Voodo magic metaclass-y deferred pytables loading
     
     Parameters
     ----------
@@ -235,22 +235,14 @@ def _deferred_factory(handle, node_iter):
     one property method per node_name that loads the specified node
     from the table
     """
-    
-    def __del__(self):
-        self._handle.close()
-    def __init__(self, handle):
-        self._handle = handle
-        self._loaded = {}
-    def __getitem__(self, item):
-        return getattr(self, item)
-        
-    attrs = {'__init__': __init__,
-             '__del__': __del__,
-             '__getitem__': __getitem__}
-
+    attrs = {}
     
     def add_property(nodename):
+        """Create the @property getter with name 'nodename' thats going
+        to be added to the class, and which is called by __getitem__
+        on cls['nodename'] requests"""
         def get(self):
+            # the arrays are cached in self._loaded
             if nodename not in self._loaded:
                 self._loaded[nodename] = self._handle.getNode(where='/',
                     name=nodename)[:]
@@ -259,9 +251,7 @@ def _deferred_factory(handle, node_iter):
 
 
     reprs = []
-    for node in node_iter:
-        name = node.name
-        
+    for name in node_names:
         this_repr = '  %s: [shape=%s, dtype=%s]' % \
             (name, handle.getNode(where='/', name=name).shape,
              handle.getNode(where='/', name=name).dtype)
@@ -273,4 +263,30 @@ def _deferred_factory(handle, node_iter):
     class_repr = 'DeferredTables<{\n%s\n}>' % ',\n'.join(reprs)
     attrs['__repr__'] = lambda self: class_repr
     
-    return type('DeferredTables', (object,), attrs)(handle)
+    return type('DeferredTables', (_DeferredTableBase,), attrs)(handle, node_names)
+
+
+class _DeferredTableBase(object):
+    def __init__(self, handle, node_names):
+        self._handle = handle
+        self._node_names = node_names
+        self._loaded = {}
+        
+    def __del__(self):
+        self._handle.close()
+        
+    def __getitem__(self, item):
+        return getattr(self, item)
+        
+    def iteritems(self):
+        for name in self._node_names:
+            yield (name, getattr(self, name))
+            
+    def keys(self):    
+        return self._node_names
+        
+    def iterkeys(self):
+        return iter(self._node_names)
+        
+    def __contains__(self, key):
+        return self._node_names.__contains__(key)
