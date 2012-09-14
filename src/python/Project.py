@@ -19,6 +19,7 @@
 import os
 import numpy as np
 import yaml
+from msmbuilder import Trajectory
 import IPython as ip
 import msmio
 
@@ -164,8 +165,3 @@ class Project(object):
         traj = Trajectory.LoadTrajectoryFile(self.conf_filename)
         traj['XYZList'] = None
         return traj
-    
-if __name__ == '__main__':
-    p = Project.load_from('Tutorial/Project.yaml')
-    p2 = Project.load_from('TestFiles/UnitTestReference/ProjectInfo.h5')
-    p2.save('sdf.yaml')
