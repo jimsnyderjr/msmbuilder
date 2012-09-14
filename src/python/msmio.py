@@ -35,7 +35,6 @@ numpy.savez clone using HDF5 format, via the PyTables HDF5 library.
 __all__ = ['saveh', 'loadh']
 
 import os
-import itertools
 import warnings
 import numpy as np
 import tables
@@ -143,7 +142,7 @@ def saveh(file, *args, **kwargs):
         handle.close()
 
     
-def loadh(file, name=Ellipsis):
+def loadh(file, name=Ellipsis, deferred=True):
     """
     Load an array(s) from .hdf format files
     
@@ -195,7 +194,15 @@ def loadh(file, name=Ellipsis):
         if own_fid:
             handle.close()
         return node[:]
-
+    
+    if not deferred:
+        result = {}
+        for node in handle.iterNodes(where='/'):
+            result[node.name] = node[:]
+        if own_fid:
+            handle.close()
+        return result
+        
     return DeferredTable(handle, own_fid)
 
 
@@ -231,7 +238,7 @@ class DeferredTable(object):
         for name in self._node_names:
             yield (name, getattr(self, name))
             
-    def keys(self):    
+    def keys(self):
         return self._node_names
         
     def iterkeys(self):
