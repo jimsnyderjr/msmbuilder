@@ -143,7 +143,7 @@ def saveh(file, *args, **kwargs):
         handle.close()
 
     
-def loadh(file, name=Ellipsis, deferred=True):
+def loadh(file, name=Ellipsis):
     """
     Load an array(s) from .hdf format files
     
@@ -152,13 +152,12 @@ def loadh(file, name=Ellipsis, deferred=True):
     file : string or tables.File
         The file to read. It must be either a string, or a an open PyTables
         file handle
-    name : string or array of strings, optional
-        The name of the arrays to read from the file. If group is a string
-        or array of strings, only the indicated arrays will be read from disk.
-        otherwise, all arrays will be read.
+    name : string, optional
+        The name of a single to read from the file. If not supplied, all arrays
+        will be read
     deferred : bool, optional
-        If true, and you request more than a single name,
-        the result will be lazy-ily loaded.
+        If true, and you did not request just a single name, the result will
+        be lazyily loaded.
     
     Returns
     -------
@@ -193,94 +192,41 @@ def loadh(file, name=Ellipsis, deferred=True):
             raise ValueError('Node "%s" does not exist '
                 'in file %s' % (name, file))
         
-        result = node[:]
+        if own_fid:
+            handle.close()
+        return node[:]
 
-    else:
-        node_iter = handle.iterNodes(where='/')
-        
-        # filter the nodes
-        if name is not Ellipsis:
-            node_iter = itertools.ifilter(lambda node: node.name in name,
-                                          node_iter)
-    
-        if deferred:
-            # the deferred handler will close the file itself
-            return _deferred_factory(handle, [e.name for e in node_iter])
-            
-        else:
-            result = {}
-            for node in node_iter:
-                result[node.name] = node[:]
-
-    if own_fid:
-        handle.close()
-        
-    return result
+    return DeferredTable(handle, own_fid)
 
 
-def _deferred_factory(handle, node_names):
-    """
-    Voodo magic metaclass-y deferred pytables loading
-    
-    Parameters
-    ----------
-    handle : tables.File
-        An open (read me) pytables object
-    node_iter : iterator
-        Iterator over the nodes you want to display/load
-    
-    Returns
-    -------
-    An instance of an object of type 'DeferredTables' who has
-    one property method per node_name that loads the specified node
-    from the table
-    """
-    attrs = {}
-    
-    def add_property(nodename):
-        """Create the @property getter with name 'nodename' thats going
-        to be added to the class, and which is called by __getitem__
-        on cls['nodename'] requests"""
-        # note, this step of adding the property needs to be done within
-        # a closure so that nodename gets unique bound to the resulting
-        # function
-        def get(self):
-            # the arrays are cached in self._loaded
-            if nodename not in self._loaded:
-                self._loaded[nodename] = self._handle.getNode(where='/',
-                    name=nodename)[:]
-            return self._loaded[nodename] 
-        return property(get)
-
-
-    reprs = []
-    for name in node_names:
-        this_repr = '  %s: [shape=%s, dtype=%s]' % \
-            (name, handle.getNode(where='/', name=name).shape,
-             handle.getNode(where='/', name=name).dtype)
-         
-        attrs[name] = add_property(name)
-        reprs.append(this_repr)
-    
-    
-    class_repr = 'DeferredTables<{\n%s\n}>' % ',\n'.join(reprs)
-    attrs['__repr__'] = lambda self: class_repr
-    
-    return type('DeferredTables', (_DeferredTableBase,), attrs)(handle, node_names)
-
-
-class _DeferredTableBase(object):
-    def __init__(self, handle, node_names):
+class DeferredTable(object):
+    def __init__(self, handle, own_fid):
         self._handle = handle
-        self._node_names = node_names
+        self._node_names = [e.name for e in handle.iterNodes(where='/')]
         self._loaded = {}
+        self._own_fid = own_fid
+        
+        repr_strings = []
+        for name in self._node_names:
+            repr_strings.append('  %s: [shape=%s, dtype=%s]' % \
+                (name, handle.getNode(where='/', name=name).shape,
+                handle.getNode(where='/', name=name).dtype))
+        self._repr_string = '{\n%s\n}' % ',\n'.join(repr_strings)
+    
+    def __repr__(self):
+        return self._repr_string
         
     def __del__(self):
-        self._handle.close()
+        if self._own_fid:
+            self._handle.close()
         
-    def __getitem__(self, item):
-        return getattr(self, item)
-        
+    def __getitem__(self, key):
+        if key not in self._node_names:
+            raise KeyError('%s not in %s' % (key, self._node_names))
+        if key not in self._loaded:
+            self._loaded[key] = self._handle.getNode(where='/', name=key)[:]
+        return self._loaded[key]
+    
     def iteritems(self):
         for name in self._node_names:
             yield (name, getattr(self, name))
