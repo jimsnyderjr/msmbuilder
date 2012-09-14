@@ -241,6 +241,9 @@ def _deferred_factory(handle, node_names):
         """Create the @property getter with name 'nodename' thats going
         to be added to the class, and which is called by __getitem__
         on cls['nodename'] requests"""
+        # note, this step of adding the property needs to be done within
+        # a closure so that nodename gets unique bound to the resulting
+        # function
         def get(self):
             # the arrays are cached in self._loaded
             if nodename not in self._loaded:
