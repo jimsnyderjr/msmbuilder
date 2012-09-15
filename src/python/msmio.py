@@ -59,8 +59,7 @@ def saveh(file, *args, **kwargs):
     file : str or tables.File
         Either the file name (string) or an open pytables file
         (file-like object opened with tables.openFile(...))
-        where the data will be saved. If file is a string, the ``.hdf``
-        extension will be appended to the file name if it is not already there.
+        where the data will be saved.
     args : Arguments, optional
         Arrays to save to the file. Since it is not possible for Python to
         know the names of the arrays outside `savez`, the arrays will be saved
@@ -88,9 +87,6 @@ def saveh(file, *args, **kwargs):
 
     
     if isinstance(file, basestring):
-        if not file.endswith('.hdf'):
-            file = file + '.hdf'
-            
         handle = tables.openFile(file, 'a')
         own_fid = True
     else:
