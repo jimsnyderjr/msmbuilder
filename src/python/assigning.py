@@ -1,44 +1,71 @@
 import sys, os
 import numpy as np
-from msmbuilder.Serializer import Serializer
+import tables
 from msmbuilder.Trajectory import Trajectory
 import logging
 logger = logging.getLogger('assigning')
 
-def _setup_containers(assignments_path, distances_path, num_trajs, longest):
-    "helper method"
-    assignments_tmp = assignments_path + '.tmp'
-    distances_tmp = distances_path + '.tmp'
-    if os.path.exists(assignments_tmp):
-        os.remove(assignments_tmp)
-    if os.path.exists(distances_tmp):
-        os.remove(distances_tmp)
+def _setup_containers(outputdir, project):
+    """
+    Setup the files on disk (Assignments.h5 and Assignments.h5.distances) that
+    results will be sent to.
     
-    all_distances = -1 * np.ones((num_trajs, longest), dtype=np.float32)
-    all_assignments = -1 * np.ones((num_trajs, longest), dtype=np.int)
+    Check to ensure that if they exist (and contain partial results), the
+    containers are not corrupted
     
-    if os.path.exists(assignments_path) and os.path.exists(distances_path):
-        s = Serializer.LoadFromHDF(assignments_path)
-        t = Serializer.LoadFromHDF(distances_path)
-        all_distances = s['Data']
-        all_assignments = t['Data']
+    Parameters
+    ----------
+    outputdir : str
+        path to save/find the files
+    project : msmbuilder.Project
+        The msmbuilder project file. Only the NumTrajs and TrajLengths are
+        actully used (if you want to spoof it, you can just pass a dict)
+    all_vtrajs : list
+        The VTrajs are used to check that the containers on disk, if they
+        exist, contain the right stuff
         
-        try:
-            completed_trajectories = s['completed_trajectories']
-        except:
-            completed_trajectories = (all_assignments[:,0] >= 0)
-        
+    Returns
+    -------
+    f_assignments : tables.File
+        pytables handle to the assignments file, open in 'append' mode
+    f_distances : tables.File
+        pytables handle to the assignments file, open in 'append' mode    
+    """
+    if not os.path.exists(outputdir):
+        os.mkdir(outputdir)
+    
+    assignments_fn = os.path.join(outputdir, 'Assignments.h5')
+    distances_fn = os.path.join(outputdir, 'Assignments.h5.distances')
+    
+    max_n_frames = np.max(project.traj_lengths)
+    minus_ones = -1 * np.ones((n_trajs, max_n_frames))
+    
+    def save_container(filename, dtype):
+        msmio.saveh(filename, Data=np.array(minus_ones, dtype=dtype),
+                    completed_trajs=np.zeros((project.n_trajs), dtype=np.bool))
+    
+    def check_container(filename):
+        ondisk = msmio.load(filename, deferred=False)
+        if project.n_trajs != len(ondisk['hashes']):
+            raise ValueError('You jabe %d ntrajs, but your checkpoint \
+file has %d' % (project.n_trajs, len(ondisk['completed_trajs'])))
+    
+    # save assignments container
+    if (not os.path.exists(assignments_fn)) \
+            and (not os.path.exists(distances_fn)):
+        save_container(assignments_fn, np.int)
+        save_container(distances_fn, np.float32)
+    elif os.path.exists(assignments_fn) and os.path.exists(distances_fn):
+        check_container(assignments_fn)
+        check_container(distances_fn)
     else:
-        logger.info("Creating serializer containers")
-        completed_trajectories = np.array([False] * num_trajs)
-        Serializer({'Data': all_assignments,
-                    'completed_trajectories': completed_trajectories
-                    }).SaveToHDF(assignments_path)
-        Serializer({'Data': all_distances}).SaveToHDF(distances_path)
-        
-    return assignments_tmp, distances_tmp, all_assignments, all_distances, completed_trajectories
-
-
+        raise ValueError("You're missing one of the containers")
+    
+    # append mode is read and write
+    f_assignments = tables.openFile(assignments_fn, mode='a')
+    f_distances = tables.openFile(distances_fn, mode='a')
+    
+    return f_assignments, f_distances
 def assign_in_memory(metric, generators, project):
     """This really should be called simple assign -- its the simplest"""
 
