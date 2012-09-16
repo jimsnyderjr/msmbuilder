@@ -227,7 +227,7 @@ def get_implied_timescales_helper(args):
     
     assignments_fn, n_states, lag_time, n_implied_times, sliding_window, trimming, symmetrize = args
     
-    assignments = Serializer.LoadData(assignments_fn)
+    assignments = Serializer.load_data(assignments_fn)
     
     try:
         from msmbuilder import MSMLib

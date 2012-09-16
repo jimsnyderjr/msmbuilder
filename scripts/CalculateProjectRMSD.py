@@ -68,5 +68,5 @@ Please use CalculateProjectDistance.py
 
     distances = run(project, pdb, atom_indices)
     
-    Serializer.SaveData(args.output, distances)
+    Serializer.save_data(args.output, distances)
     logger.info('Saved to %s', args.output)

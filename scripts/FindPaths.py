@@ -86,5 +86,5 @@ Paths.h5 can be read by RenderPaths.py which generates a .dot file capturing the
     
     Serializer({'Paths': paths,
                 'Bottlenecks': bottlenecks,
-                'fluxes': fluxes}).SaveToHDF(args.output)
+                'fluxes': fluxes}).save_to_hdf(args.output)
     logger.info('Saved output to %s', args.output)

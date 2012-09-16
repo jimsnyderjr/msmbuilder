@@ -1,5 +1,6 @@
 import sys, os
 import numpy as np
+import warnings
 from msmbuilder.Serializer import Serializer
 from msmbuilder.Trajectory import Trajectory
 import logging
@@ -33,8 +34,8 @@ def _setup_containers(assignments_path, distances_path, num_trajs, longest):
         completed_trajectories = np.array([False] * num_trajs)
         Serializer({'Data': all_assignments,
                     'completed_trajectories': completed_trajectories
-                    }).SaveToHDF(assignments_path)
-        Serializer({'Data': all_distances}).SaveToHDF(distances_path)
+                    }).save_to_hdf(assignments_path)
+        Serializer({'Data': all_distances}).save_to_hdf(distances_path)
         
     return assignments_tmp, distances_tmp, all_assignments, all_distances, completed_trajectories
 
@@ -100,8 +101,8 @@ def assign_with_checkpoint(metric, project, generators, assignments_path, distan
         if ((i+1) % checkpoint == 0) or (i+1 == project['NumTrajs']):
             Serializer({'Data': all_assignments,
                         'completed_trajectories': completed_trajectories
-                        }).SaveToHDF(assignments_tmp)
-            Serializer({'Data': all_distances}).SaveToHDF(distances_tmp)
+                        }).save_to_hdf(assignments_tmp)
+            Serializer({'Data': all_distances}).save_to_hdf(distances_tmp)
             os.rename(assignments_tmp, assignments_path)
             os.rename(distances_tmp, distances_path)
 
@@ -164,8 +165,8 @@ def streaming_assign_with_checkpoint(metric, project, generators, assignments_pa
         if ((i+1) % checkpoint == 0) or ((i+1) == project['NumTrajs']):
             Serializer({'Data': all_assignments,
                         'completed_trajectories': completed_trajectories
-                        }).SaveToHDF(assignments_tmp)
-            Serializer({'Data': all_distances}).SaveToHDF(distances_tmp)
+                        }).save_to_hdf(assignments_tmp)
+            Serializer({'Data': all_distances}).save_to_hdf(distances_tmp)
             os.rename(assignments_tmp, assignments_path)
             os.rename(distances_tmp, distances_path)
 

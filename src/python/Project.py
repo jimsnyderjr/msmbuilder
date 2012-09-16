@@ -124,7 +124,7 @@ class Project(Serializer):
             DictContainer["NumGensList"]=NumGensList
         Project = cls(DictContainer)
         if Filename!=None:
-            Project.SaveToHDF(Filename)
+            Project.save_to_hdf(Filename)
         
         try:
             os.mkdir("./Data")
@@ -404,7 +404,7 @@ def _convert_filename_list( args):
         traj["XYZList"] = traj["XYZList"][::stride]
         
         if atom_indices != None:
-            trj['XYZList'] = traj['XYZList'][:,atom_indices,:]
+            traj['XYZList'] = traj['XYZList'][:,atom_indices,:]
         #if atom_indices!=None:
         #    traj.restrict_atom_indices(atom_indices)
 

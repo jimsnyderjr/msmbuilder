@@ -825,7 +825,7 @@ class Hierarchical(object):
         Exception if something already exists at `filename`
         """
         s = Serializer({'z_matrix': self.Z, 'traj_lengths': self.traj_lengths})
-        s.SaveToHDF(filename)
+        s.save_to_hdf(filename)
     
     @classmethod
     def load_from_disk(cls, filename):

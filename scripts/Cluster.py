@@ -191,8 +191,8 @@ could stride a little at the begining, but its not recommended.""")
             
             logger.info('Since stride=1, Saving %s', args.assignments)
             logger.info('Since stride=1, Saving %s', args.distances)
-            Serializer.SaveData(args.assignments, assignments)
-            Serializer.SaveData(args.distances, distances)
+            Serializer.save_data(args.assignments, assignments)
+            Serializer.save_data(args.distances, distances)
 
 if __name__ == '__main__':
     args, metric = parser.parse_args()

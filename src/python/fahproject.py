@@ -176,7 +176,7 @@ class FahProject(object):
 
         project_info = Project.load_from_hdf( projectinfo_file )
         project_info["Memory"] = cPickle.dumps( self.memory )
-        project_info.SaveToHDF( projectinfo_file, do_file_check=False )
+        project_info.save_to_hdf( projectinfo_file, do_file_check=False )
 
         return
 

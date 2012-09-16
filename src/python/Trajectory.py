@@ -185,13 +185,13 @@ class Trajectory(ConformationBaseClass):
         precision: float, optional
             I'm not really sure what this does (RTM 6/27).
         """
-        Serializer.CheckIfFileExists(filename)
+        Serializer.check_if_file_exists(filename)
         key = "XYZList"
         X = self.pop(key)
-        Serializer.SaveToHDF(self, filename)
+        Serializer.save_to_hdf(self, filename)
         Rounded = _convert_to_lossy_integers(X, precision)
         self[key] = Rounded
-        Serializer.SaveEntryAsEArray(self[key], key, filename=filename)
+        Serializer.save_e_array(self[key], key, filename=filename)
         self[key] = X
 
     def save_to_xtc(self, Filename, precision=DEFAULT_PRECISION):
@@ -205,7 +205,7 @@ class Trajectory(ConformationBaseClass):
             I'm not really sure what this does (RTM 6/27).
         """
 
-        Serializer.CheckIfFileExists(Filename)
+        Serializer.check_if_file_exists(Filename)
         XTCFile = xtc.XTCWriter(Filename)
         for i in range(len(self["XYZList"])):
             XTCFile.write(self["XYZList"][i], 1, i, np.eye(3, 3, dtype='float32'), precision)
@@ -270,7 +270,7 @@ class Trajectory(ConformationBaseClass):
         extension = os.path.splitext(Filename)[1]
 
         if extension == '.h5':
-            self.SaveToHDF(Filename)
+            self.save_to_hdf(Filename)
         elif extension == '.xtc':
             self.save_to_xtc(Filename)
         elif extension == '.pdb':
@@ -619,7 +619,7 @@ class Trajectory(ConformationBaseClass):
             if i == WhichFrame:
                 return(np.array(c.coords))
             i += 1
-        raise Exception("Frame %d not found in file %s; last frame found was %d" % (WhichFrame, cls.TrajFilename, i))
+        raise Exception("Frame %d not found in file %s; last frame found was %d" % (WhichFrame, TrajFilename, i))
 
     @classmethod
     def read_dcd_frame(cls, TrajFilename, WhichFrame):

@@ -219,10 +219,7 @@ class ArgumentParser(object):
         """Work around for the argparse bug with respect to defaults and FileType not
         playing together nicely -- http://stackoverflow.com/questions/8236954/specifying-default-filenames-with-argparse-but-not-opening-them-on-help"""
         for name, type in self.name_to_type.iteritems():
-            if isinstance(type, nestedtype):
-                setattr(namespace, name, [type.innertype(e) for e in getattr(namespace, name)])
-            else:
-                setattr(namespace, name, type(getattr(namespace, name)))
+            setattr(namespace, name, type(getattr(namespace, name)))
                 
         return namespace
 

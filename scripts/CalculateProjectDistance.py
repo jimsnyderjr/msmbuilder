@@ -76,5 +76,5 @@ Output as a HDF5 file (load using Serializer.LoadData())""", get_metric=True)
 
     distances = run(project, pdb, metric, traj_fn)
     
-    Serializer.SaveData(args.output, distances)
+    Serializer.save_data(args.output, distances)
     logger.info('Saved to %s', args.output)

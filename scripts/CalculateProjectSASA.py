@@ -79,5 +79,5 @@ if __name__ == '__main__':
 
     SASA = run( project, atom_indices, args.traj_fn )
 
-    Serializer.SaveData( args.output, SASA )
+    Serializer.save_data( args.output, SASA )
 
