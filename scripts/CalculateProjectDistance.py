@@ -32,9 +32,9 @@ def run(project, pdb, metric, traj_fn = None):
     ppdb = metric.prepare_trajectory(pdb)
     
     if traj_fn == None:
-        distances = -1 * np.ones((project['NumTrajs'], max(project['TrajLengths'])))
+        distances = -1 * np.ones((project.n_trajs, np.max(project.traj_lengths)))
 
-        for i in xrange(project['NumTrajs']):
+        for i in xrange(project.n_trajs):
             logger.info("Working on Trajectory %d", i )
             ptraj = metric.prepare_trajectory(project.LoadTraj(i))
             d = metric.one_to_all(ppdb, ptraj, 0)

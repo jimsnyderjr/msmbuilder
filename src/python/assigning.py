@@ -18,8 +18,8 @@ def _setup_containers(project, assignments_fn, distances_fn):
     Parameters
     ----------
     project : msmbuilder.Project
-        The msmbuilder project file. Only the NumTrajs and TrajLengths are
-        actully used (if you want to spoof it, you can just pass a dict)
+        The msmbuilder project file. Only the n_trajs and traj_lengths are
+        actully used.
     assignments_fn : string
 
     distances_fn : string
@@ -65,7 +65,7 @@ def _setup_containers(project, assignments_fn, distances_fn):
 def assign_in_memory(metric, generators, project):
     """This really should be called simple assign -- its the simplest"""
 
-    n_trajs, max_traj_length = project['NumTrajs'], max(project['TrajLengths'])
+    n_trajs, max_traj_length = project.n_trajs, np.max(project.traj_lengths)
     assignments = -1 * np.ones((n_trajs, max_traj_length), dtype='int')
     distances = -1 * np.ones((n_trajs, max_traj_length), dtype='float32')
 

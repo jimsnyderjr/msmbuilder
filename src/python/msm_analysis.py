@@ -224,9 +224,9 @@ def get_implied_timescales_helper(args):
     assignments_fn, n_states, lag_time, n_implied_times, sliding_window, trimming, symmetrize = args
     
     try:
-        assignments = msmio.loadh(args.assignments, 'arr_0')
+        assignments = msmio.loadh(assignments_fn, 'arr_0')
     except KeyError:
-        assignments = msmio.loadh(args.assignments, 'Data')
+        assignments = msmio.loadh(assignments_fn, 'Data')
     
     try:
         from msmbuilder import MSMLib

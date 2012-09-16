@@ -30,11 +30,11 @@ logger = logging.getLogger(__name__)
 
 
 def run(project, pdb, atom_indices):    
-    distances = -1 * np.ones((project['NumTrajs'], max(project['TrajLengths'])))
+    distances = -1 * np.ones((project.n_trajs, np.max(project.n_trajs)))
     rmsd = RMSD(atom_indices)
     ppdb = rmsd.prepare_trajectory(pdb)
     
-    for i in xrange(project['NumTrajs']):
+    for i in xrange(project.n_trajs):
         ptraj = rmsd.prepare_trajectory(project.LoadTraj(i))
         d = rmsd.one_to_all(ppdb, ptraj, 0)
         distances[i, 0:len(d)] = d
