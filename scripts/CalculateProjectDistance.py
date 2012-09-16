@@ -21,7 +21,7 @@ import os, sys
 import numpy as np
 from msmbuilder import Project
 from msmbuilder import Trajectory
-from msmbuilder import Serializer
+from msmbuilder import msmio
 from msmbuilder import arglib
 
 import logging
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 Calculate the distance between an input PDB and all conformations in your project.
 Alternatively, you can limit the distance calculate to a single trajectory by
 passing a trajectory filename.
-Output as a HDF5 file (load using Serializer.LoadData())""", get_metric=True)
+Output as a HDF5 file (load using msmio.loadh())""", get_metric=True)
     parser.add_argument('pdb')
     parser.add_argument('output', help='''Output file name. Output is an
         .h5 file with RMSD entries corresponding to the Assignments.h5 file.''',
@@ -76,5 +76,5 @@ Output as a HDF5 file (load using Serializer.LoadData())""", get_metric=True)
 
     distances = run(project, pdb, metric, traj_fn)
     
-    Serializer.SaveData(args.output, distances)
+    msmio.saveh(args.output, distances)
     logger.info('Saved to %s', args.output)

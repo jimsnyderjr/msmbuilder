@@ -19,7 +19,7 @@
 
 import numpy as np
 from msmbuilder import arglib
-from msmbuilder import Serializer
+from msmbuilder import msmio
 from msmbuilder.MSMLib import invert_assignments
 import logging
 logger = logging.getLogger(__name__)
@@ -78,8 +78,13 @@ generator, measured by what ever distance metric was used in assigning.""")
     args = parser.parse_args()
     arglib.die_if_path_exists(args.output)
     
-    assignments = Serializer.LoadData(args.assignments)
-    distances = Serializer.LoadData(args.distances)
+    try:
+        assignments = msmio.loadh(args.assignments, 'arr_0')
+        distances =  msmio.loadh(args.distances, 'arr_0')
+    except KeyError:
+        assignments = msmio.loadh(args.assignments, 'Data')
+        distances =  msmio.loadh(args.distances, 'Data')
+        
     
     radii = main(assignments, distances)
     

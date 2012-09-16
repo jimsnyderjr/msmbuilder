@@ -33,12 +33,12 @@ def _setup_containers(project, assignments_fn, distances_fn):
     """
 
     def save_container(filename, dtype):
-        msmio.saveh(filename, Data=-1*np.ones((project.n_trajs, np.max(project.traj_lengths)), dtype=dtype),
+        msmio.saveh(filename, arr_0=-1*np.ones((project.n_trajs, np.max(project.traj_lengths)), dtype=dtype),
                     completed_trajs=np.zeros((project.n_trajs), dtype=np.bool))
 
     def check_container(filename):
         fh = tables.openFile(filename, 'r')
-        if  fh.root.Data.shape != (project.n_trajs, np.max(project.traj_lengths)):
+        if  fh.root.arr_0.shape != (project.n_trajs, np.max(project.traj_lengths)):
             raise ValueError('Shape error 1')
         if fh.root.completed_trajs.shape != (project.n_trajs,):
             raise ValueError('Shape error 2')
@@ -145,8 +145,8 @@ def assign_with_checkpoint(metric, project, generators, assignments_path, distan
                 distances[j] = d[ind]
             
             end_index = start_index+this_length
-            fh_a.root.Data[i, start_index:end_index] = assignments
-            fh_d.root.Data[i, start_index:end_index] = distances
+            fh_a.root.arr_0[i, start_index:end_index] = assignments
+            fh_d.root.arr_0[i, start_index:end_index] = distances
             
             # i'm not sure exactly what the optimal flush frequency is
             fh_a.flush()

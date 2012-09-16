@@ -165,7 +165,7 @@ def loadh(file, name=Ellipsis, deferred=True):
     ------
     IOError
         If file does not exist
-    ValueErrror
+    KeyError
         If the request name does not exist
     """
     
@@ -184,7 +184,7 @@ def loadh(file, name=Ellipsis, deferred=True):
         try:
             node = handle.getNode(where='/', name=name)
         except tables.NoSuchNodeError:
-            raise ValueError('Node "%s" does not exist '
+            raise KeyError('Node "%s" does not exist '
                 'in file %s' % (name, file))
         
         return_value = np.array(node[:])
@@ -221,6 +221,9 @@ class DeferredTable(object):
         return self._repr_string
         
     def __del__(self):
+        self.close()
+    
+    def close(self):
         if self._own_fid:
             self._handle.close()
         

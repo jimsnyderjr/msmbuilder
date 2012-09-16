@@ -21,7 +21,6 @@ import sys
 import os
 
 from msmbuilder import Project
-from msmbuilder import Serializer
 from msmbuilder import arglib
 import logging
 logger = logging.getLogger(__name__)

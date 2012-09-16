@@ -24,7 +24,7 @@ from collections import defaultdict
 import numpy as np
 import random
 import logging
-from msmbuilder import Serializer, Project
+from msmbuilder import msmio, Project
 logger = logging.getLogger(__name__)
 
 def run(project, assignments, conformations_per_state, states, output_dir):
@@ -84,7 +84,12 @@ to use GetRandomConfs.py""")
     if -1 in args.states:
         logger.info("Ripping PDBs for all states")
         args.states = 'all'
+
+    try:
+        assignments = msmio.loadh(args.assignments, 'arr_0')
+    except KeyError:
+        assignments = msmio.loadh(args.assignments, 'Data')
     
-    run(Project.LoadFromHDF(args.project), Serializer.LoadData(args.assignments), args.conformations_per_state,
+    run(Project.LoadFromHDF(args.project), assignments, args.conformations_per_state,
          args.states, args.output_dir)
 

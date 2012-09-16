@@ -823,8 +823,7 @@ class Hierarchical(object):
         ------
         Exception if something already exists at `filename`
         """
-        s = Serializer({'z_matrix': self.Z, 'traj_lengths': self.traj_lengths})
-        s.SaveToHDF(filename)
+        msmio.saveh(filename, z_matrix=self.Z, traj_lengths=self.traj_lengths)
     
     @classmethod
     def load_from_disk(cls, filename):
@@ -842,8 +841,8 @@ class Hierarchical(object):
         ------
         TODO: Probablt raises something if filename doesn't exist?
         """
-        s = Serializer.LoadFromHDF(filename)
-        Z, traj_lengths = s['z_matrix'], s['traj_lengths']
+        data = msmio.loadh(filename, deferred=False)
+        Z, traj_lengths = data['z_matrix'], data['traj_lengths']
         #Next two lines are a hack to fix Serializer bug. KAB
         if np.rank(traj_lengths)==0:
             traj_lengths = [traj_lengths]

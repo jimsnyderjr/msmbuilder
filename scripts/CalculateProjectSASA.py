@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import numpy as np
-from msmbuilder import Trajectory, Project, arglib, Serializer
+from msmbuilder import Trajectory, Project, arglib, msmio
 from msmbuilder.geometry import asa
 import logging
 logger = logging.getLogger(__name__)
@@ -55,12 +55,12 @@ def run(project, atom_indices=None, traj_fn = 'all'):
 if __name__ == '__main__':
     parser = arglib.ArgumentParser("""Calculates the Solvent Accessible Surface Area
     of all atoms in a given trajectory, or for all trajectories in the project. The 
-    output is a Serializer object which contains the SASA for each atom in each frame
+    output is a hdf5 file which contains the SASA for each atom in each frame
     in each trajectory (or the single trajectory you passed in.""" )
     parser.add_argument('project')
     parser.add_argument('atom_indices', help='Indices of atoms to calculate SASA',
         default='all')
-    parser.add_argument('output', help='''Serializer File for output. Note this will
+    parser.add_argument('output', help='''hdf5 file for output. Note this will
         be THREE dimensional: ( trajectory, frame, atom ), unless you just ask for
         one trajectory, in which case it will be shape (frame, atom).''',
         default='SASA.h5')
@@ -79,5 +79,5 @@ if __name__ == '__main__':
 
     SASA = run( project, atom_indices, args.traj_fn )
 
-    Serializer.SaveData( args.output, SASA )
+    msmio.saveh(args.output, SASA)
 
