@@ -55,4 +55,5 @@ logging.basicConfig(format=__LOGGING_FORMAT, level=logging.INFO, datefmt="%Y-%m-
 
 import PDB
 from trajectory import Trajectory
+from Conformation import Conformation
 from project import Project

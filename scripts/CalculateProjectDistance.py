@@ -67,7 +67,7 @@ Output as a HDF5 file (load using msmio.loadh())""", get_metric=True)
     
     arglib.die_if_path_exists(args.output)
 
-    project = Project.LoadFromHDF( args.project )    
+    project = Project.load_from(args.project)
     pdb = Trajectory.LoadTrajectoryFile( args.pdb )
     if args.traj_fn.lower() == 'all':
         traj_fn = None

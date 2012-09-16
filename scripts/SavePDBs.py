@@ -89,7 +89,8 @@ to use GetRandomConfs.py""")
         assignments = msmio.loadh(args.assignments, 'arr_0')
     except KeyError:
         assignments = msmio.loadh(args.assignments, 'Data')
+    project = Project.load_from(args.project)
     
-    run(Project.LoadFromHDF(args.project), assignments, args.conformations_per_state,
+    run(project, assignments, args.conformations_per_state,
          args.states, args.output_dir)
 

@@ -66,7 +66,7 @@ Output as a HDF5 file (load using msmio.loadh())
 
     arglib.die_if_path_exists(args.output)
 
-    project = Project.LoadFromHDF( args.project )    
+    project = Project.load_from(args.project)
     pdb = Trajectory.LoadTrajectoryFile( args.pdb )
     atom_indices = np.loadtxt( args.atom_indices ).astype(int)
 

@@ -75,7 +75,7 @@ if __name__ == '__main__':
     else:
         atom_indices = np.loadtxt( args.atom_indices ).astype(int)
 
-    project = Project.LoadFromHDF( args.project )
+    project = Project.load_from(args.project)
 
     SASA = run( project, atom_indices, args.traj_fn )
 
