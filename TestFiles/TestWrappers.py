@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, 111-1307  USA
 
 """
 Tests all the wrapper scripts. One test per wrapper. This should provide a
@@ -102,7 +102,7 @@ class TestWrappers(unittest.TestCase):
         eq_(P1._n_trajs, r_P1.n_trajs)
         npt.assert_equal(P1._traj_lengths, r_P1._traj_lengths)
         eq_(P1._traj_basename, r_P1._traj_basename)
-        eq_(P1._traj_path, r_P1._traj_basename)
+        eq_(P1._traj_path, r_P1._traj_path)
         eq_(P1._traj_ext, r_P1._traj_ext)
         
     def test_b_CreateAtomIndices(self):
@@ -190,12 +190,15 @@ class TestWrappers(unittest.TestCase):
         npt.assert_array_almost_equal(ImpTS,r_ImpTS,decimal=4)
 
     def test_g_GetRandomConfs(self):
-        # This one is tricky since it is stochastic...
         P1 = Project.load_from(ProjectFn)
         Assignments = msmio.loadh("Data/Assignments.Fixed.h5", 'arr_0')
-        GetRandomConfs.run(P1, Assignments, NumRandomConformations, "2RandomConfs.lh5", 'lh5')
-        Trajectory.LoadTrajectoryFile("2RandomConfs.lh5")
-        # Kyle: you may have a good idea for the efficient testing of this
+        
+        # make a predictable stream of random numbers by seeding the RNG with 42
+        random_source = np.random.RandomState(42)
+        randomconfs = GetRandomConfs.run(P1, Assignments, NumRandomConformations, random_source)
+        
+        reference = Trajectory.LoadTrajectoryFile(os.path.join(ReferenceDir, "2RandomConfs.lh5"))
+        self.assert_trajectories_equal(reference, randomconfs)
 
     def test_h_CalculateClusterRadii(self):
 
@@ -230,7 +233,7 @@ class TestWrappers(unittest.TestCase):
         mm   = np.loadtxt(os.path.join(WorkingDir, "Data", "MacroMapping.dat"),'int')
         mm_r = np.loadtxt(os.path.join(ReferenceDir, "Data", "MacroMapping.dat"),'int')
 
-        ma   = msmio.loadh(os.path.join(WorkingDir, "Data", "MacroAssignments.h5"), 'Data')
+        ma   = msmio.loadh(os.path.join(WorkingDir, "Data", "MacroAssignments.h5"), 'arr_0')
         ma_r = msmio.loadh(os.path.join(ReferenceDir, "Data", "MacroAssignments.h5"), 'Data')
 
         num_macro = NumMacroStates
@@ -284,8 +287,8 @@ class TestWrappers(unittest.TestCase):
         sinks = [70]
         paths, bottlenecks, fluxes = FindPaths.run(tprob, sources, sinks, 10)
         # paths are hard to test due to type issues, adding later --TJL
-        bottlenecks_ref = msmio.loadh(os.path.join(ReferenceDir, "transition_path_theory_reference", "dijkstra_bottlenecks.h5"), 'arr_0')
-        fluxes_ref = msmio.loadh(os.path.join(ReferenceDir, "transition_path_theory_reference", "dijkstra_fluxes.h5"), 'arr_0')
+        bottlenecks_ref = msmio.loadh(os.path.join(ReferenceDir, "transition_path_theory_reference", "dijkstra_bottlenecks.h5"), 'Data')
+        fluxes_ref = msmio.loadh(os.path.join(ReferenceDir, "transition_path_theory_reference", "dijkstra_fluxes.h5"), 'Data')
         npt.assert_array_almost_equal(bottlenecks, bottlenecks_ref)
         npt.assert_array_almost_equal(fluxes, fluxes_ref)
 

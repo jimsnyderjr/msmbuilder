@@ -20,9 +20,8 @@ def reference_rg(xyzlist):
     return Rg
 
 def test_rg_1():
-    project = Project.load_from(os.path.join(fixtures_dir(),
-        'ProjectInfo.h5'))
-    traj = project.LoadTraj(0)
+    project = Project.load_from(os.path.join(fixtures_dir(), 'ProjectInfo.h5'))
+    traj = project.load_traj(0)
     xyzlist = traj['XYZList']
 
     a = rgcalc.calculate_rg(xyzlist)

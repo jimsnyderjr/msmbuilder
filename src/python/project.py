@@ -189,11 +189,14 @@ class Project(object):
     def load_traj(self, trj_index, stride=1):
         filename = self.traj_filename(trj_index)
         return Trajectory.LoadTrajectoryFile(filename, Stride=stride)
-            
+
+    def load_conf(self):
+        return Trajectory.LoadTrajectoryFile(self.conf_filename)
+
     def traj_filename(self, traj_index):
         return os.path.normpath(os.path.join(self._project_dir, self._traj_path,
                 self._traj_basename + str(traj_index) + self._traj_ext))
-        
+
     def _validate(self):
         if not self._n_trajs == len(self.traj_lengths):
             raise ValueError('traj lengths mismatch')
@@ -206,8 +209,8 @@ class Project(object):
             raise ValueError('Trajs length don\'t match what\'s on disk')
 
     
-    def empty_trajectory(self):
-        traj = Trajectory.LoadTrajectoryFile(self.conf_filename)
+    def empty_traj(self):
+        traj = self.load_conf()
         traj['XYZList'] = None
         return traj
         
