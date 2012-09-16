@@ -1,7 +1,7 @@
 # methods to support testing
 import os
 import numpy as np
-from numpy.tesing import (assert_allclose, assert_almost_equal,
+from numpy.testing import (assert_allclose, assert_almost_equal,
   assert_approx_equal, assert_array_almost_equal, assert_array_almost_equal_nulp,
   assert_array_equal, assert_array_less, assert_array_max_ulp, assert_equal,
   assert_raises, assert_string_equal, assert_warns)
@@ -9,7 +9,7 @@ from nose.tools import ok_, eq_
 
 from pkg_resources import resource_filename
 
-__all__ = ['Context', 'assert_traj_equal', 'assert_spase_matrix_equal',
+__all__ = ['context', 'assert_traj_equal', 'assert_spase_matrix_equal',
            # stuff that was imported from numpy / nose too
           'ok_', 'eq_', 'assert_allclose', 'assert_almost_equal',
           'assert_approx_equal', 'assert_array_almost_equal',
@@ -41,7 +41,8 @@ class Context(object):
         import scipy.io
         from msmbuilder import Trajectory, Serializer
         
-        fn = resource_filename('msmbuilder', key)
+        # ReferenceData is where all the data is stored
+        fn = resource_filename('msmbuilder', os.path.join('ReferenceData', key))
         
         # the filename extension
         ext = os.path.splitext(fn)[1]
@@ -82,6 +83,7 @@ class Context(object):
         "Alias for get()"
         return self.get(key)
 
+context = Context()
 
 def assert_traj_equal(t1, t2):
     """Assert two msmbuilder trajectories are equal. This method should actually

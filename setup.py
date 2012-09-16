@@ -76,8 +76,8 @@ def configuration(parent_package='',top_path=None):
     config.set_options(assume_default_configuration=True,
                        delegate_options_to_subpackages=True,
                        quiet=False)
-                       
-    config.add_data_files(glob('TestFiles/UnitTestReference/*'))
+        
+    config.add_data_dir('ReferenceData')
 
     # add the scipts, so they can be called from the command line
     config.add_scripts([e for e in glob('scripts/*.py') if not e.endswith('__.py')])
