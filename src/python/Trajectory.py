@@ -171,7 +171,7 @@ class Trajectory(ConformationBaseClass):
 
         self['XYZList'] = copy.copy(self['XYZList'][:, AtomIndices])
 
-    def save_to_lhdf(self, Filename, precision=DEFAULT_PRECISION):
+    def save_to_lhdf(self, filename, precision=DEFAULT_PRECISION):
         """Save a Trajectory instance to a Lossy HDF File.
 
         First, remove the XYZList key because it should be written using the
@@ -185,13 +185,13 @@ class Trajectory(ConformationBaseClass):
         precision: float, optional
             I'm not really sure what this does (RTM 6/27).
         """
-        Serializer.CheckIfFileExists(Filename)
+        Serializer.CheckIfFileExists(filename)
         key = "XYZList"
         X = self.pop(key)
-        Serializer.SaveToHDF(self, Filename)
+        Serializer.SaveToHDF(self, filename)
         Rounded = _convert_to_lossy_integers(X, precision)
         self[key] = Rounded
-        Serializer.SaveEntryAsEArray(self[key], key, Filename=Filename)
+        Serializer.SaveEntryAsEArray(self[key], key, filename=filename)
         self[key] = X
 
     def save_to_xtc(self, Filename, precision=DEFAULT_PRECISION):

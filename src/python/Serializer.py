@@ -350,46 +350,67 @@ class Serializer(dict):
         
         if os.path.exists(filename):
             raise IOError("File %s already exists!" % filename)
+    
 
+    @staticmethod
+    def SaveData(*args, **kwargs):
+        msg = ('This function name is depricated, use save_data '
+               'instead. This alias will be removed in version 2.7')
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        return Serializer.save_data(*args, **kwargs)
+                
+    @staticmethod
+    def LoadData(*args, **kwargs):
+        msg = ('This function name is depricated, use load_data '
+               'instead. This alias will be removed in version 2.7')
+        warnings.warn(msg, DeprecationWarning, stacklevel=2)
+        return Serializer.load_data(*args, **kwargs)
+    
     def SaveToHDF(self, *args, **kwargs):
         msg = ('This function name is depricated, use save_to_hdf '
                'instead. This alias will be removed in version 2.7')
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
-        self.save_to_hdf(self, *args, **kwargs)
+        return self.save_to_hdf(*args, **kwargs)
     
-    def load_from_hdf(self, *args, **kwargs):
+    @staticmethod
+    def LoadFromHDF(*args, **kwargs):
         msg = ('This function name is depricated, use load_from_hdf '
                'instead. This alias will be removed in version 2.7')
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
-        self.load_from_hdf(self, *args, **kwargs)
-        
-    def SaveEntryAsEArray(self, *args, **kwargs):
+        return Serializer.load_from_hdf(*args, **kwargs)
+     
+    @staticmethod  
+    def SaveEntryAsEArray(*args, **kwargs):
         msg = ('This function name is depricated, use save_e_array '
                'instead. This alias will be removed in version 2.7')
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
-        self.save_e_array(self, *args, **kwargs)
+        return Serializer.save_e_array(*args, **kwargs)
     
-    def SaveEntryAsCArray(self, *args, **kwargs):
+    @staticmethod
+    def SaveEntryAsCArray(*args, **kwargs):
         msg = ('This function name is depricated, use save_c_array '
                'instead. This alias will be removed in version 2.7')
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
-        self.save_c_array(self, *args, **kwargs)
+        return Serializer.save_c_array(*args, **kwargs)
     
-    def SaveCSRMatrix(self, *args, **kwargs):
+    @staticmethod
+    def SaveCSRMatrix(*args, **kwargs):
         msg = ('This function name is depricated, use save_csr_matrix '
                'instead. This alias will be removed in version 2.7')
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
-        self.save_csr_matrix(self, *args, **kwargs)
-            
-    def LoadCSRMatrix(self, *args, **kwargs):
+        return Serializer.save_csr_matrix(*args, **kwargs)
+    
+    @staticmethod
+    def LoadCSRMatrix(*args, **kwargs):
         msg = ('This function name is depricated, use load_csr_matrix '
                'instead. This alias will be removed in version 2.7')
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
-        self.load_csr_matrix(self, *args, **kwargs)
+        return Serializer.load_csr_matrix(*args, **kwargs)
     
-    def CheckIfFileExists(self, *args, **kwargs):
+    @staticmethod
+    def CheckIfFileExists(*args, **kwargs):
         msg = ('This function name is depricated, use check_if_file_exists '
                'instead. This alias will be removed in version 2.7')
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
-        self.check_if_file_exists(self, *args, **kwargs)
+        return Serializer.check_if_file_exists(*args, **kwargs)
     
