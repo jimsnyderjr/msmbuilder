@@ -35,7 +35,7 @@ def run(project, pdb, atom_indices):
     ppdb = rmsd.prepare_trajectory(pdb)
     
     for i in xrange(project.n_trajs):
-        ptraj = rmsd.prepare_trajectory(project.LoadTraj(i))
+        ptraj = rmsd.prepare_trajectory(project.load_traj(i))
         d = rmsd.one_to_all(ppdb, ptraj, 0)
         distances[i, 0:len(d)] = d
     

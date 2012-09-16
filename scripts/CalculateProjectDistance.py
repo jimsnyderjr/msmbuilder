@@ -36,7 +36,7 @@ def run(project, pdb, metric, traj_fn = None):
 
         for i in xrange(project.n_trajs):
             logger.info("Working on Trajectory %d", i )
-            ptraj = metric.prepare_trajectory(project.LoadTraj(i))
+            ptraj = metric.prepare_trajectory(project.load_traj(i))
             d = metric.one_to_all(ppdb, ptraj, 0)
             distances[i, 0:len(d)] = d
     else:

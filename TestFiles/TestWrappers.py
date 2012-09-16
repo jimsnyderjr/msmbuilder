@@ -45,7 +45,8 @@ import scipy
 import scipy.io
 
 import numpy as np
-import numpy.testing
+from nose.tools import eq_, ok_
+import numpy.testing as npt
 
 from msmbuilder import Project
 from msmbuilder import Trajectory
@@ -81,40 +82,34 @@ class TestWrappers(unittest.TestCase):
 
     def assert_trajectories_equal(self, t1, t2):
         """ asserts that two MSMBuilder trajectories are equivalent """
-        numpy.testing.assert_array_equal(t1["AtomID"], t2["AtomID"])
-        numpy.testing.assert_array_equal(t1["AtomNames"], t2["AtomNames"])
-        numpy.testing.assert_array_equal(t1["ChainID"], t2["ChainID"])
-        self.assertEqual(t1["IndexList"], t2["IndexList"])
-        numpy.testing.assert_array_equal(t1["ResidueID"], t2["ResidueID"])
-        numpy.testing.assert_array_equal(t1["ResidueNames"], t2["ResidueNames"])
-        numpy.testing.assert_array_almost_equal(t1["XYZList"], t2["XYZList"])
+        npt.assert_array_equal(t1["AtomID"], t2["AtomID"])
+        npt.assert_array_equal(t1["AtomNames"], t2["AtomNames"])
+        npt.assert_array_equal(t1["ChainID"], t2["ChainID"])
+        eq_(t1["IndexList"], t2["IndexList"])
+        npt.assert_array_equal(t1["ResidueID"], t2["ResidueID"])
+        npt.assert_array_equal(t1["ResidueNames"], t2["ResidueNames"])
+        npt.assert_array_almost_equal(t1["XYZList"], t2["XYZList"])
 
     def test_a_ConvertDataToHDF(self):
         os.chdir(WorkingDir)
         shutil.copy(PDBFn,"./")
                     #def run(projectfn, PDBfn, InputDir, source, mingen, stride, rmsd_cutoff,  parallel='None'):
         ConvertDataToHDF.run(ProjectFn, PDBFn, TutorialDir+"/XTC", "file", 0, 1, 0,1000000)
-        P1 = Project.LoadFromHDF(ProjectFn)
+        P1 = Project.load_from(ProjectFn)
         
-        r_P1 = Project.LoadFromHDF(os.path.abspath(os.path.join('..', ReferenceDir, ProjectFn)))
+        r_P1 = Project.load_from(os.path.abspath(os.path.join('..', ReferenceDir, ProjectFn)))
         
-        #self.assertEqual(P1['ConfFilename'], r_P1['ConfFilename'])
-        self.assertEqual(P1['NumTrajs'], r_P1['NumTrajs'])
-        self.assertEqual(P1['TrajFileBaseName'], r_P1['TrajFileBaseName'])
-
-        """The following assert removed by KAB 12-12-11 because it was broken by
-        recent changes to the path conventions in Project files.
-        self.assertEqual(P1['TrajFilePath'], r_P1['TrajFilePath'])
-        """
-        
-        self.assertEqual(P1['TrajFileType'], r_P1['TrajFileType'])
-        numpy.testing.assert_array_equal(P1['TrajLengths'], r_P1['TrajLengths'])
+        eq_(P1._n_trajs, r_P1.n_trajs)
+        npt.assert_equal(P1._traj_lengths, r_P1._traj_lengths)
+        eq_(P1._traj_basename, r_P1._traj_basename)
+        eq_(P1._traj_path, r_P1._traj_basename)
+        eq_(P1._traj_ext, r_P1._traj_ext)
         
     def test_b_CreateAtomIndices(self):
         AInd = CreateAtomIndices.run(PDBFn, 'minimal')
         np.savetxt("AtomIndices.dat", AInd, "%d")
         r_AInd=np.loadtxt(ReferenceDir + "/AtomIndices.dat", int)
-        numpy.testing.assert_array_equal(AInd, r_AInd)
+        npt.assert_array_equal(AInd, r_AInd)
 
     def test_c_Cluster(self):
         # We need to be sure to skip the stochastic k-mediods
@@ -144,8 +139,8 @@ class TestWrappers(unittest.TestCase):
         r_Assignments     = msmio.loadh(ReferenceDir +"/Data/Assignments.h5", 'Data')
         r_AssignmentsRMSD = msmio.loadh(ReferenceDir +"/Data/Assignments.h5.RMSD", 'Data')
         
-        numpy.testing.assert_array_equal(Assignments, r_Assignments)
-        numpy.testing.assert_array_equal(AssignmentsRMSD, r_AssignmentsRMSD)
+        npt.assert_array_equal(Assignments, r_Assignments)
+        npt.assert_array_equal(AssignmentsRMSD, r_AssignmentsRMSD)
         
     
     def test_e_BuildMSM(self):
@@ -154,19 +149,19 @@ class TestWrappers(unittest.TestCase):
         # Test mapping
         m   = np.loadtxt("Data/Mapping.dat")
         r_m = np.loadtxt(ReferenceDir +"/Data/Mapping.dat")
-        numpy.testing.assert_array_almost_equal(m, r_m, err_msg="Mapping.dat incorrect")
+        npt.assert_array_almost_equal(m, r_m, err_msg="Mapping.dat incorrect")
 
         # Test populations
         p   = np.loadtxt("Data/Populations.dat")
         r_p = np.loadtxt(ReferenceDir +"/Data/Populations.dat")
-        numpy.testing.assert_array_almost_equal(p, r_p, err_msg="Populations.dat incorrect")
+        npt.assert_array_almost_equal(p, r_p, err_msg="Populations.dat incorrect")
 
         # Test counts matrix (unsymmetrized)
         uC   = scipy.io.mmread("Data/tCounts.UnSym.mtx").tocsr()
         r_uC = scipy.io.mmread(ReferenceDir +"/Data/tCounts.UnSym.mtx").tocsr()
         D=(uC-r_uC).data
         Z=0.*D#we compare the data entries of the sparse matrix
-        numpy.testing.assert_array_almost_equal(D,Z, err_msg="Mapping.dat incorrect")
+        npt.assert_array_almost_equal(D,Z, err_msg="Mapping.dat incorrect")
 
         # Test counts matrix
         C   = scipy.io.mmread("Data/tCounts.mtx")
@@ -178,25 +173,25 @@ class TestWrappers(unittest.TestCase):
         #normalizing makes this test no longer depend on an arbitrary scaling factor (the total number of counts)
         #the relative number of counts in the current and reference models DOES matter, however.
         
-        numpy.testing.assert_array_almost_equal(D,Z, err_msg="tCounts.mtx incorrect")
+        npt.assert_array_almost_equal(D,Z, err_msg="tCounts.mtx incorrect")
 
         # Test transition matrix
         T   = scipy.io.mmread("Data/tProb.mtx")
         r_T = scipy.io.mmread(ReferenceDir +"/Data/tProb.mtx")
         D=(T-r_T).data
         Z=0.*D
-        numpy.testing.assert_array_almost_equal(D,Z, err_msg="tProb.mtx incorrect")
+        npt.assert_array_almost_equal(D,Z, err_msg="tProb.mtx incorrect")
 
     def test_f_CalculateImpliedTimescales(self):
 
         CalculateImpliedTimescales.run(MinLagtime, MaxLagtime, LagtimeInterval, NumEigen, "Data/Assignments.Fixed.h5",Symmetrize, 1, "ImpliedTimescales.dat")
         ImpTS   = np.loadtxt("ImpliedTimescales.dat")
         r_ImpTS = np.loadtxt(ReferenceDir +"/ImpliedTimescales.dat")
-        numpy.testing.assert_array_almost_equal(ImpTS,r_ImpTS,decimal=4)
+        npt.assert_array_almost_equal(ImpTS,r_ImpTS,decimal=4)
 
     def test_g_GetRandomConfs(self):
         # This one is tricky since it is stochastic...
-        P1 = Project.LoadFromHDF(ProjectFn)
+        P1 = Project.load_from(ProjectFn)
         Assignments = msmio.loadh("Data/Assignments.Fixed.h5", 'arr_0')
         GetRandomConfs.run(P1, Assignments, NumRandomConformations, "2RandomConfs.lh5", 'lh5')
         Trajectory.LoadTrajectoryFile("2RandomConfs.lh5")
@@ -211,7 +206,7 @@ class TestWrappers(unittest.TestCase):
         #recall that this one bundles stuff
         #time.sleep(10) # we have to wait a little to get results
         cr_r = np.loadtxt(ReferenceDir +"/ClusterRadii.dat")
-        numpy.testing.assert_array_almost_equal(cr, cr_r)
+        npt.assert_array_almost_equal(cr, cr_r)
 
     def test_i_CalculateRMSD(self):
         #C1   = Conformation.Conformation.LoadFromPDB(PDBFn)
@@ -223,7 +218,7 @@ class TestWrappers(unittest.TestCase):
         
         cr   = msmio.loadh(outpath, 'arr_0')
         cr_r = np.loadtxt(os.path.join(ReferenceDir, "RMSD.dat"))
-        numpy.testing.assert_array_almost_equal(cr, cr_r)
+        npt.assert_array_almost_equal(cr, cr_r)
 
         
     def test_j_PCCA(self):
@@ -249,8 +244,8 @@ class TestWrappers(unittest.TestCase):
         mm_permuted = permutation_mapping[mm]
         MSMLib.ApplyMappingToAssignments(ma,permutation_mapping)
         
-        numpy.testing.assert_array_almost_equal(mm_permuted, mm_r)
-        numpy.testing.assert_array_almost_equal(ma, ma_r)
+        npt.assert_array_almost_equal(mm_permuted, mm_r)
+        npt.assert_array_almost_equal(ma, ma_r)
 
     def test_k_CalculateProjectRMSD(self):
         #C1 = Conformation.LoadFromPDB(PDBFn)
@@ -263,7 +258,7 @@ class TestWrappers(unittest.TestCase):
         
         r0 = msmio.loadh(ReferenceDir+"/RMSD.h5", 'Data')
         r1 = msmio.loadh(WorkingDir+"/RMSD.h5", 'arr_0')
-        numpy.testing.assert_array_almost_equal(r0,r1, err_msg="Error: Project RMSDs disagree!")
+        npt.assert_array_almost_equal(r0,r1, err_msg="Error: Project RMSDs disagree!")
 
     def test_l_CalculateProjectSASA(self):
         outpath = os.path.join(WorkingDir, "SASA.h5")
@@ -271,7 +266,7 @@ class TestWrappers(unittest.TestCase):
 
         r0 = msmio.loadh(os.path.join( ReferenceDir, "SASA.h5" ), 'Data')
         r1 = msmio.loadh(os.path.join( WorkingDir, "SASA.h5" ), 'arr_0')
-        numpy.testing.assert_array_almost_equal(r0,r1, err_msg="Error: Project SASAs disagree!")
+        npt.assert_array_almost_equal(r0,r1, err_msg="Error: Project SASAs disagree!")
 
     def test_m_DoTPT(self): 
         T = scipy.io.mmread(os.path.join(ReferenceDir, "Data", "tProb.mtx"))
@@ -280,8 +275,8 @@ class TestWrappers(unittest.TestCase):
         script_out = DoTPT.run(T, sources, sinks)
         committors_ref = msmio.loadh(os.path.join(ReferenceDir, "transition_path_theory_reference", "committors.h5"), 'Data')
         net_flux_ref = msmio.loadh(os.path.join(ReferenceDir, "transition_path_theory_reference", "net_flux.h5"), 'Data')
-        numpy.testing.assert_array_almost_equal(script_out[0], committors_ref)
-        numpy.testing.assert_array_almost_equal(script_out[1].toarray(), net_flux_ref)
+        npt.assert_array_almost_equal(script_out[0], committors_ref)
+        npt.assert_array_almost_equal(script_out[1].toarray(), net_flux_ref)
 
     def test_n_FindPaths(self):
         tprob = scipy.io.mmread(os.path.join(ReferenceDir, "Data", "tProb.mtx"))
@@ -291,8 +286,8 @@ class TestWrappers(unittest.TestCase):
         # paths are hard to test due to type issues, adding later --TJL
         bottlenecks_ref = msmio.loadh(os.path.join(ReferenceDir, "transition_path_theory_reference", "dijkstra_bottlenecks.h5"), 'arr_0')
         fluxes_ref = msmio.loadh(os.path.join(ReferenceDir, "transition_path_theory_reference", "dijkstra_fluxes.h5"), 'arr_0')
-        numpy.testing.assert_array_almost_equal(bottlenecks, bottlenecks_ref)
-        numpy.testing.assert_array_almost_equal(fluxes, fluxes_ref)
+        npt.assert_array_almost_equal(bottlenecks, bottlenecks_ref)
+        npt.assert_array_almost_equal(fluxes, fluxes_ref)
 
     def test_z_Cleanup(self):
         """Are we removing all unittest files? """+str(DeleteWhenFinished)

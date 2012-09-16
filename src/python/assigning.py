@@ -72,7 +72,7 @@ def assign_in_memory(metric, generators, project):
     pgens = metric.prepare_trajectory(generators)
 
     for i in xrange(n_trajs):
-        traj = project.LoadTraj(i)
+        traj = project.load_traj(i)
         ptraj = metric.prepare_trajectory(traj)
         for j in xrange(len(traj)):
             d = metric.one_to_all(ptraj, pgens, j)
