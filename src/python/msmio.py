@@ -187,9 +187,10 @@ def loadh(file, name=Ellipsis, deferred=True):
             raise ValueError('Node "%s" does not exist '
                 'in file %s' % (name, file))
         
+        return_value = np.array(node[:])
         if own_fid:
             handle.close()
-        return node[:]
+        return return_value
     
     if not deferred:
         result = {}

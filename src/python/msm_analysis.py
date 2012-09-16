@@ -23,9 +23,8 @@ import scipy
 import numpy as np
 import multiprocessing
 import warnings
-
+from msmbuilder import msmio
 from msmbuilder.utils import uneven_zip
-from msmbuilder import Serializer
 import logging
 logger = logging.getLogger('msm_analysis')
 
@@ -224,7 +223,7 @@ def get_implied_timescales_helper(args):
     
     assignments_fn, n_states, lag_time, n_implied_times, sliding_window, trimming, symmetrize = args
     
-    assignments = Serializer.LoadData(assignments_fn)
+    assignments = msmio.loadh(assignments_fn, 'Data')
     
     try:
         from msmbuilder import MSMLib
