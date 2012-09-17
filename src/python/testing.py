@@ -58,7 +58,7 @@ def load(filename):
 
     # load trajectories
     if ext in ['.lh5', '.pdb']:
-        val = Trajectory.LoadTrajectoryFile(filename)
+        val = Trajectory.load_trajectory_file(filename)
 
     # load flat text files
     elif 'AtomIndices.dat' in filename:
@@ -71,13 +71,13 @@ def load(filename):
     
     # short circuit opening ProjectInfo
     elif 'ProjectInfo.h5' in filename:
-        val = Project.LoadFromHDF(filename)
+        val = Project.load_from_hdf(filename)
         
     # load with serializer files that end with .h5, .hdf or .h5.distances
     elif ext in ['.h5', '.hdf']:
-        val = Serializer.LoadFromHDF(filename)
+        val = Serializer.load_from_hdf(filename)
     elif filename.endswith('.h5.distances'):
-        val = Serializer.LoadFromHDF(filename)
+        val = Serializer.load_from_hdf(filename)
 
     # load matricies
     elif ext in ['.mtx']:

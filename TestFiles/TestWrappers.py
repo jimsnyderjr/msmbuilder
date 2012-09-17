@@ -183,8 +183,7 @@ class TestWrappers(unittest.TestCase):
 
     def test_f_CalculateImpliedTimescales(self):
 
-        CalculateImpliedTimescales.run(MinLagtime, MaxLagtime, LagtimeInterval, NumEigen, "Data/Assignments.Fixed.h5",Symmetrize, 1, "ImpliedTimescales.dat")
-        ImpTS   = np.loadtxt("ImpliedTimescales.dat")
+        ImpTS = CalculateImpliedTimescales.run(MinLagtime, MaxLagtime, LagtimeInterval, NumEigen, "Data/Assignments.Fixed.h5",Symmetrize, 1)
         r_ImpTS = np.loadtxt(ReferenceDir +"/ImpliedTimescales.dat")
         numpy.testing.assert_array_almost_equal(ImpTS,r_ImpTS,decimal=4)
 

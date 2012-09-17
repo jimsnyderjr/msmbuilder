@@ -88,4 +88,4 @@ contains all the lag times.\n""")
         args.symmetrize, args.procs)
 
     numpy.savetxt(args.output, impTimes)
-    logger.info("Saved output to %s", impTimes)
+    logger.info("Saved output to %s", args.output)
