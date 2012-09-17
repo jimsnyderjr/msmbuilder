@@ -46,6 +46,6 @@ if __name__ == "__main__":
         sys.exit(1)
     
     assignments = main(k, d, args.hierarchical_clustering_zmatrix)
-    Serializer.SaveData(args.assignments, assignments)
+    Serializer.save_data(args.assignments, assignments)
     logger.info('Saved assignments to %s', args.assignments)
 

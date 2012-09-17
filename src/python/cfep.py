@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from msmbuilder import MSMLib
 from msmbuilder import Serializer
-from msmbuilder import transition_path_theory as tpt
+from msmbuilder import tpt
 from msmbuilder.msm_analysis import get_eigenvectors
 from msmbuilder.geometry.contact import atom_distances
 
@@ -152,9 +152,10 @@ class CutCoordinate(object):
             MSM transition probability matrix from the `counts` matrix.
         """
 
-        t_matrix = MSMLib.build_msm_from_counts(counts, lag_time, symmetrize)
+        t_matrix = MSMLib.build_msm_from_counts(self.counts, lag_time, symmetrize)
         self.reaction_coordinate_values = tpt.calculate_committors([self.reactant],
-                                                                   [self.product], t_matrix)
+                                                                   [self.product], 
+                                                                   t_matrix)
         return
 
 
@@ -174,7 +175,7 @@ class CutCoordinate(object):
             MSM transition probability matrix from the `counts` matrix.
         """
 
-        t_matrix = MSMLib.build_msm_from_counts(lag_time, symmetrize)
+        t_matrix = MSMLib.build_msm_from_counts(self.counts, lag_time, symmetrize)
         v, w = get_eigenvectors(t_matrix, 5)
         self.reaction_coordinate_values = w[:,1].flatten()
 
@@ -548,8 +549,8 @@ def test():
     print "Testing cfep code...."
 
     test_dir = '/Users/TJ/Programs/msmbuilder.sandbox/tjlane/cfep/'
-
-    generators = Trajectory.LoadTrajectoryFile(test_dir + 'Gens.lh5')
+    
+    generators = Trajectory.load_trajectory_file(test_dir + 'Gens.lh5')
     counts = io.mmread(test_dir + 'tCounts.mtx')
     reactant = 0    # generator w/max RMSD
     product = 10598 # generator w/min RMSD
