@@ -90,7 +90,7 @@ class Serializer(dict):
         if do_file_check:
             self.check_if_file_exists(filename)
         
-        handle = tables.File(filename,'a')
+        handle = tables.File(filename, 'a')
         
         for key, data in self.iteritems():
             # This checks if the list is homogenous and can be stored
@@ -137,7 +137,7 @@ class Serializer(dict):
         """
         
         serializer = Serializer()
-        handle = tables.File(filename,'r')
+        handle = tables.File(filename, 'r')
         
         for node in handle.listNodes(loc):
             if type(node) == tables.VLArray:
@@ -180,7 +180,7 @@ class Serializer(dict):
         if handle is None and filename is None:
             raise ValueError("Must Specify either f0 or filename")
         if handle is None:
-            handle = tables.File(filename,'a')
+            handle = tables.File(filename, 'a')
             close_on_return = True
         else:
             close_on_return = False
@@ -232,7 +232,7 @@ class Serializer(dict):
         if handle is None and filename is None:
             raise ValueError("Must Specify either f0 or filename")
         if handle is None:
-            handle = tables.File(filename,'a')
+            handle = tables.File(filename, 'a')
             close_on_return = True
         else:
             close_on_return = False

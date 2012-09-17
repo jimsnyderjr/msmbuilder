@@ -55,7 +55,7 @@ def _ensure_iterable(arg):
 def _check_sources_sinks(sources, sinks):
     sources = _ensure_iterable(sources)
     sinks = _ensure_iterable(sinks)
-    if np.any( sources == sinks ):
+    if np.any(sources == sinks):
         raise ValueError("Sets `sources` and `sinks` must be disjoint "
                          "to find paths between them")
     return sources, sinks
@@ -139,7 +139,7 @@ def find_top_paths(sources, sinks, tprob, num_paths=10, node_wipe=False, net_flu
             logger.info("Only %d possible pathways found. Stopping backtrack.", i)
             break
         paths.append(path)
-        bottlenecks.append( (b1,b2) )
+        bottlenecks.append((b1, b2))
         fluxes.append(flux)
         logger.info("%s | %s | %s | %s ", i, path, (b1, b2), flux)
 
@@ -159,7 +159,7 @@ def find_top_paths(sources, sinks, tprob, num_paths=10, node_wipe=False, net_flu
         if i != num_paths - 1:
             while len(Q) > 0:
                 w = Q.pop()
-                for v in G[1][np.where( G[0] == w )]:
+                for v in G[1][np.where(G[0] == w)]:
                     if pi[v] == w:
                         b, pi, net_flux = _back_relax(v, b, pi, net_flux)
                         Q.append(v)
@@ -229,7 +229,7 @@ def Dijkstra(sources, sinks, net_flux):
         U.append(w)
 
         # relax
-        for v in G[1][np.where( G[0] == w )]:
+        for v in G[1][np.where(G[0] == w)]:
             if b[v] < min(b[w], net_flux[w,v]):
                 b[v] = min(b[w], net_flux[w,v])
                 pi[v] = w
@@ -280,22 +280,22 @@ def _back_relax(s, b, pi, NFlux):
     """
 
     G = scipy.sparse.find(NFlux)
-    if len( G[0][np.where( G[1] == s )] ) > 0:
+    if len(G[0][np.where(G[1] == s)]) > 0:
 
         # For all nodes connected upstream to the node `s` in question,
         # Re-source that node from the best option (lowest cost) one level lower
         # Notation: j is node one level below, s is the one being considered
 
         b[s] = 0                                 # set the cost to zero
-        for j in G[0][np.where( G[1] == s )]:    # for each upstream node
-            if b[s] < min( b[j], NFlux[j,s] ):   # if that node has a lower cost
-                b[s] = min( b[j], NFlux[j,s] )   # then set the cost to that node
+        for j in G[0][np.where(G[1] == s)]:    # for each upstream node
+            if b[s] < min(b[j], NFlux[j,s]):   # if that node has a lower cost
+                b[s] = min(b[j], NFlux[j,s])   # then set the cost to that node
                 pi[s] = j                        # and the source comes from there
 
     # if there are no nodes connected to this one, then we need to go one
     # level up and work there first
     else:
-        for sprime in G[1][np.where( G[0] == s )]:
+        for sprime in G[1][np.where(G[0] == s)]:
             NFlux[s,sprime] = 0
             b, pi, NFlux = _back_relax(sprime, b, pi, NFlux)
 
@@ -399,10 +399,10 @@ def find_path_bottleneck(path, net_flux):
     flux = 100000. # initialize as large value
 
     for i in range(len(path) - 1):
-        if net_flux[ path[i], path[i+1] ] < flux:
-            flux = net_flux[ path[i], path[i+1] ]
+        if net_flux[path[i], path[i + 1]] < flux:
+            flux = net_flux[path[i], path[i + 1]]
             b1 = path[i]
-            b2 = path[i+1]
+            b2 = path[i + 1]
 
     return (b1, b2), flux
 
@@ -464,16 +464,16 @@ def calculate_fluxes(sources, sinks, tprob, populations=None, committors=None):
         X[(np.arange(n), np.arange(n))] = populations * (1.0 - committors)
         Y[(np.arange(n), np.arange(n))] = committors
     else:
-        X = scipy.sparse.lil_matrix( (n,n) )
-        Y = scipy.sparse.lil_matrix( (n,n) )
-        X.setdiag( populations * (1.0 - committors) )
+        X = scipy.sparse.lil_matrix((n,n))
+        Y = scipy.sparse.lil_matrix((n,n))
+        X.setdiag( populations * (1.0 - committors))
         Y.setdiag(committors)
 
     if dense:
-        fluxes = np.dot( np.dot(X, tprob), Y )
-        fluxes[( np.arange(n), np.arange(n) )] = np.zeros(n)
+        fluxes = np.dot(np.dot(X, tprob), Y)
+        fluxes[(np.arange(n), np.arange(n))] = np.zeros(n)
     else:
-        fluxes = np.dot( np.dot(X.tocsr(), tprob.tocsr()), Y.tocsr() )
+        fluxes = np.dot(np.dot(X.tocsr(), tprob.tocsr()), Y.tocsr())
         fluxes = fluxes.tolil()
         fluxes.setdiag(np.zeros(n))
 
@@ -523,13 +523,13 @@ def calculate_net_fluxes(sources, sinks, tprob, populations=None, committors=Non
     if dense:
         net_flux = np.zeros((n, n))
     else:
-        net_flux = scipy.sparse.lil_matrix( (n,n) )
+        net_flux = scipy.sparse.lil_matrix((n, n))
 
-    for k in range( len(ind[0]) ):
-        i,j = ind[0][k], ind[1][k]
-        forward = flux[i,j]
-        reverse = flux[j,i]
-        net_flux[i,j] = max(0, forward - reverse)
+    for k in range(len(ind[0])):
+        i, j = ind[0][k], ind[1][k]
+        forward = flux[i, j]
+        reverse = flux[j, i]
+        net_flux[i, j] = max(0, forward - reverse)
 
     return net_flux
 
@@ -617,15 +617,15 @@ def calculate_avg_TP_time(sources, sinks, tprob, lag_time):
     for u in sources:
         for i in range(n):
             if i not in sources:
-                P[u,i] = T[u,i]
+                P[u, i] = T[u, i]
 
     for u in sources:
-        T[u,:] = np.zeros(n)
-        T[:,u] = 0
+        T[u, :] = np.zeros(n)
+        T[:, u] = 0
 
     for i in sources:
-        N = T[i,:].sum()
-        T[i,:] = T[i,:]/N
+        N = T[i, :].sum()
+        T[i,:] = T[i, :]/N
 
     X = calculate_mfpt(sinks, tprob, lag_time)
     TP = P * X.T
@@ -743,7 +743,7 @@ def calculate_all_to_all_mfpt(tprob, populations=None):
     # mfpt[i,j] = z[j,j] - z[i,j] / pi[j]
     mfpt = -z
     for j in range(num_states):
-        mfpt[:, j] += z[j,j]
+        mfpt[:, j] += z[j, j]
         mfpt[:, j] /= populations[j]
 
     return mfpt
@@ -758,9 +758,9 @@ def calculate_committors(sources, sinks, tprob):
     sources : array_like, int
         The set of unfolded/reactant states.
     sinks : array_like, int
-        The set of folded/product states.		
-    tprob : mm_matrix	
-        The transition matrix.			
+        The set of folded/product states.
+    tprob : mm_matrix
+        The transition matrix.
 
     Returns
     -------
@@ -780,10 +780,10 @@ def calculate_committors(sources, sinks, tprob):
     n = tprob.shape[0]
 
     if dense:
-       T = np.eye(n) - tprob
+        T = np.eye(n) - tprob
     else:
-       T = scipy.sparse.eye(n, n, 0, format='lil') - tprob
-       T = T.tolil()
+        T = scipy.sparse.eye(n, n, 0, format='lil') - tprob
+        T = T.tolil()
 
     for a in sources:
         T[a,:] = 0.0 #np.zeros(n)
@@ -855,8 +855,7 @@ def lump_transition_matrix(tprob, states_to_lump):
     m = len(to_keep_inds)
 
     # the new row is just the average transition probability
-    new_row = np.sum( tprob[states_to_lump, :], axis=0 )[to_keep_inds] / \
-                float(len(states_to_lump))
+    new_row = np.sum(tprob[states_to_lump, :], axis=0)[to_keep_inds] / float(len(states_to_lump))
     assert len(new_row) == new_N - 1
 
     # fill in the "lumped" matrix with the new data
@@ -866,10 +865,10 @@ def lump_transition_matrix(tprob, states_to_lump):
 
     A = np.zeros((lumped.shape[0], 1))
     A[:,0] = 1.0 - np.sum(lumped, axis=1).flatten()
-    lumped = np.hstack( [ lumped, A ] )
+    lumped = np.hstack([ lumped, A ])
 
     assert lumped.shape[0] == lumped.shape[1]
-    assert np.all( lumped.sum(1) == np.ones(lumped.shape[0]) )
+    assert np.all(lumped.sum(1) == np.ones(lumped.shape[0]))
 
     return lumped
 
@@ -976,8 +975,8 @@ def calculate_fraction_visits(tprob, waypoints, sources, sinks,
     # if not provided, calculate the committors/lumped transition matrix
     if not Q:
         Q = calculate_committors(sources, sinks, tprob, dense=True)
-        assert np.all( Q < 1.0 )
-        assert np.all( Q > 0.0 )
+        assert np.all(Q < 1.0)
+        assert np.all(Q > 0.0)
 
     # construct absorbing Markov chain (T), remove all waypoints & lumped sink
     N = tprob.shape[0]
@@ -985,15 +984,15 @@ def calculate_fraction_visits(tprob, waypoints, sources, sinks,
 
     # extract P, R
     n,m = T.shape
-    P = T[:n,:n]
-    R = T[:n,:m]
+    P = T[:n, :n]
+    R = T[:n, :m]
     assert P.shape == (n,n)
     assert R.shape == (n,m)
     assert n == N - (len(waypoints) + 1)
 
     # calculate the conditional committors ( B = N*R )
-    B = np.dot( np.linalg.inv( np.eye(n) - P ), R )
-    assert B.shape == (n,m)
+    B = np.dot(np.linalg.inv( np.eye(n) - P ), R)
+    assert B.shape == (n, m)
 
     # Now, B[i,-1] is the prob state i ends in a sink
     # while B[i,j] is the prob state i ends in waypoints[j]
@@ -1012,12 +1011,11 @@ def calculate_fraction_visits(tprob, waypoints, sources, sinks,
     # is just the original committor - thus we cp from `q`
     cond_Q = Q * B_sum
     assert cond_Q.shape == (N,N)
-    assert np.all( cond_Q < 1.0 )
-    assert np.all( cond_Q > 0.0 )
+    assert np.all(cond_Q < 1.0)
+    assert np.all(cond_Q > 0.0)
 
     # finally, calculate the fraction of paths h_C(A,B)
-    fraction_paths = np.sum( cond_Q[:-2,:-2] * tprob[:-2,:-2]) / \
-                        ( tprob[-2,-1] + np.sum( Q[:-2,:-2] * tprob[:-2,:-2] ) )
+    fraction_paths = np.sum(cond_Q[:-2, :-2] * tprob[:-2, :-2]) / (tprob[-2, -1] + np.sum(Q[:-2, :-2] * tprob[:-2, :-2]))
 
     if return_cond_Q:
         return fraction_paths, cond_Q
@@ -1094,7 +1092,7 @@ def calculate_hub_score(tprob, waypoints):
                 Hc += calculate_fraction_visits(tprob, waypoints, s1, s2,
                                                 Q=None, return_cond_Q=False)
 
-    Hc /= ( (N-1) * (N-2) )
+    Hc /= ((N - 1) * (N - 2))
 
     return Hc
 
@@ -1163,7 +1161,7 @@ def calculate_all_hub_scores(tprob):
                                                             s1, s2, Q)
 
         # store the hub score in an array
-        Hc_array[i] = Hc / ( (N-1) * (N-2) )
+        Hc_array[i] = Hc / ((N - 1) * (N - 2))
 
     return Hc_array
 
