@@ -30,10 +30,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def run(MinLagtime, MaxLagtime, Interval, NumEigen, AssignmentsFn, symmetrize, nProc, output):
-
-    arglib.die_if_path_exists(output)
-    
+def run(MinLagtime, MaxLagtime, Interval, NumEigen, AssignmentsFn, symmetrize, nProc):
     # Setup some model parameters
     Assignments = Serializer.LoadData(AssignmentsFn)
     NumStates = max(Assignments.flatten())+1
@@ -50,8 +47,7 @@ def run(MinLagtime, MaxLagtime, Interval, NumEigen, AssignmentsFn, symmetrize, n
     impTimes = msm_analysis.get_implied_timescales(AssignmentsFn, NumStates,
                                            lagTimes, n_implied_times=NumEigen,
                                            sliding_window=True, symmetrize=symmetrize, n_procs=nProc)
-    numpy.savetxt(output, impTimes)
-    return
+    return impTimes
 
 
 if __name__ == "__main__":
@@ -78,7 +74,8 @@ contains all the lag times.\n""")
         surrounding this choice.""", default='MLE',
         choices=['MLE', 'Transpose', 'None'])
     args = parser.parse_args()
-
+    arglib.die_if_path_exists(args.output)
+    
     LagTimes = args.lagtime.split(',')
     MinLagtime = int(LagTimes[0])
     MaxLagtime = int(LagTimes[1])
@@ -87,5 +84,8 @@ contains all the lag times.\n""")
     if args.symmetrize in ["None", "none", None]:
         args.symmetrize = None
 
-    run(MinLagtime, MaxLagtime, args.interval, args.eigvals, args.assignments,
-        args.symmetrize, args.procs, args.output)
+    impTimes = run(MinLagtime, MaxLagtime, args.interval, args.eigvals, args.assignments,
+        args.symmetrize, args.procs)
+
+    numpy.savetxt(args.output, impTimes)
+    logger.info("Saved output to %s", impTimes)

@@ -78,7 +78,7 @@ def configuration(parent_package='',top_path=None):
                        quiet=False)
     
     #once all of the data is in one place, we can add it with this
-    #config.add_data_dir('ReferenceData')
+    config.add_data_dir('reference')
 
     # add the scipts, so they can be called from the command line
     config.add_scripts([e for e in glob('scripts/*.py') if not e.endswith('__.py')])

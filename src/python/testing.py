@@ -9,7 +9,7 @@ from nose.tools import ok_, eq_
 
 from pkg_resources import resource_filename
 
-__all__ = ['get', 'eq' 'assert_traj_equal', 'assert_spase_matrix_equal',
+__all__ = ['get', 'load', 'eq', 'assert_serializer_equal', 'assert_spase_matrix_equal',
            # stuff that was imported from numpy / nose too
           'ok_', 'eq_', 'assert_allclose', 'assert_almost_equal',
           'assert_approx_equal', 'assert_array_almost_equal',
@@ -17,8 +17,8 @@ __all__ = ['get', 'eq' 'assert_traj_equal', 'assert_spase_matrix_equal',
           'assert_array_less', 'assert_array_max_ulp', 'assert_equal',
           'assert_raises', 'assert_string_equal', 'assert_warns']
 
-def get(self, name, just_filename=False):
-    """"
+def get(name, just_filename=False):
+    """
     Get reference data for testing
 
     Parameters
@@ -35,82 +35,102 @@ def get(self, name, just_filename=False):
     has a few tricks, like loading AtomIndices ith dtype=np.int
 
     """
-    # delay these imports, since this module is loaded in a bunch
-    # of places but not necessarily used
-    import scipy.io
-    from msmbuilder import Trajectory, Serializer
 
-    # ReferenceData is where all the data is stored
-    fn = resource_filename('msmbuilder', os.path.join('ReferenceData', name))
+    # reference is where all the data is stored
+    fn = resource_filename('msmbuilder', os.path.join('reference', name))
+    
+    if not os.path.exists(fn):
+        raise ValueError('Sorry! %s does not exists. If you just '
+            'added it, you\'ll have to re install' % fn)
 
     if just_filename:
         return fn
-
+    return load(fn)
+    
+def load(filename):
+    # delay these imports, since this module is loaded in a bunch
+    # of places but not necessarily used
+    import scipy.io
+    from msmbuilder import Trajectory, Serializer, Project
+    
     # the filename extension
-    ext = os.path.splitext(fn)[1]
+    ext = os.path.splitext(filename)[1]
 
     # load trajectories
     if ext in ['.lh5', '.pdb']:
-        val = Trajectory.LoadTrajectoryFile(fn)
+        val = Trajectory.LoadTrajectoryFile(filename)
 
     # load flat text files
-    elif 'AtomIndices.dat' in fn:
+    elif 'AtomIndices.dat' in filename:
         # try loading AtomIndices first, because the default for loadtxt
         # is to use floats
-        val = np.loadtxt(fn, dtype=np.int)
+        val = np.loadtxt(filename, dtype=np.int)
     elif ext in ['.dat']:
         # try loading general .dats with floats
-        val = np.loadtxt(fn)
-
+        val = np.loadtxt(filename)
+    
+    # short circuit opening ProjectInfo
+    elif 'ProjectInfo.h5' in filename:
+        val = Project.LoadFromHDF(filename)
+        
     # load with serializer files that end with .h5, .hdf or .h5.distances
     elif ext in ['.h5', '.hdf']:
-        val = Serializer.LoadFromHDF(fn)
-    elif fn.endswith('.h5.distances'):
-        val = Serializer.LoadFromHDF(fn)
+        val = Serializer.LoadFromHDF(filename)
+    elif filename.endswith('.h5.distances'):
+        val = Serializer.LoadFromHDF(filename)
 
     # load matricies
     elif ext in ['.mtx']:
-
-        val = scipy.io.mmread(fn)
+        val = scipy.io.mmread(filename)
+        
     else:
         raise TypeError("I could not infer how to load this file. You "
             "can either request load=False, or perhaps add more logic to "
-            "the load heuristics in this class: %s" % fn)
+            "the load heuristics in this class: %s" % filename)
 
     return val
 
 
 def eq(o1, o2, decimal=6):
-    from msmbuilder import Trajectory
+    from msmbuilder import Serializer
     from scipy.sparse import isspmatrix
 
     assert (type(o1) is type(o2)), 'o1 and o2 not the same type: %s %s' % (type(o1), type(o2))
 
-    if isinstance(o1, Trajectory):
-        assert_traj_equal(o1, o1, decimal)
+    if isinstance(o1, Serializer):
+        assert_serializer_equal(o1, o1, decimal)
     elif isspmatrix(o1):
         assert_spase_matrix_equal(o1, o1, decimal)
-    elif isinstance(o1, np.ndarray)
+    elif isinstance(o1, np.ndarray):
         if o1.dtype.kind == 'f' or o2.dtype.kind == 'f':
             # compare floats for almost equality
             assert_array_almost_equal(o1, o2, decimal)
         else:
             # compare everything else (ints, bools) for absolute equality
-            assert_array_equal(val, t2[key])
+            assert_array_equal(o1, o2)
     # probably these are other specialized types
     # that need a special check?
     else:
         eq_(o1, o2)
 
 
-def assert_traj_equal(t1, t2, decimal=6):
-    """Assert two msmbuilder trajectories are equal. This method should actually
-    work for any dict of numpy arrays/objects """
+def assert_serializer_equal(t1, t2, decimal=6):
+    """
+    Assert two msmbuilder serializers are equal.
+    This method should actually
+    work for any dict of numpy arrays/objects
+    """
 
     # make sure the keys are the same
     eq_(t1.keys(), t2.keys())
 
     for key, val in t1.iteritems():
+        
+        # skip this one, because we don't really care if it's not
+        # equal
+        if key == 'SerializerFilename':
+            continue
+        
         # compare numpy arrays using numpy.testing
         if isinstance(val, np.ndarray):
             if val.dtype.kind ==  'f':
@@ -120,7 +140,8 @@ def assert_traj_equal(t1, t2, decimal=6):
                 # compare everything else (ints, bools) for absolute equality
                 assert_array_equal(val, t2[key])
         else:
-            eq_(val == t2[key])
+            eq_(val, t2[key])
+
 
 def assert_spase_matrix_equal(m1, m2, decimal=6):
     """Assert two scipy.sparse matrices are equal."""
@@ -138,4 +159,4 @@ def assert_spase_matrix_equal(m1, m2, decimal=6):
 
     # even though its called assert_array_almost_equal, it will
     # work for scalars
-    assert_array_almost_equal(norm(m1 - m2), 0, decimal=decimal)
+    assert_array_almost_equal((m1 - m2).sum(), 0, decimal=decimal)

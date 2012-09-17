@@ -24,28 +24,28 @@ from msmbuilder import arglib
 import logging
 logger = logging.getLogger(__name__)
 
-def main():
-    parser = arglib.ArgumentParser(description='Assign data using a hierarchical clustering')
-    parser.add_argument('hierarchical_clustering_zmatrix', default='./Data/Zmatrix.h5', 
-        description='Path to hierarchical clustering zmatrix' )
-    parser.add_argument('num_states', help='Number of States', default='none')
-    parser.add_argument('cutoff_distance', help='Maximum cophenetic distance', default='none')
-    parser.add_argument('assignments', type=str)
-    args = parser.parse_args()
+parser = arglib.ArgumentParser(description='Assign data using a hierarchical clustering')
+parser.add_argument('hierarchical_clustering_zmatrix', default='./Data/Zmatrix.h5', 
+    help='Path to hierarchical clustering zmatrix' )
+parser.add_argument('num_states', help='Number of States', default='none')
+parser.add_argument('cutoff_distance', help='Maximum cophenetic distance', default='none')
+parser.add_argument('assignments', type=str)
+
+def main(k, d, zmatrix_fn):
+    hierarchical = Hierarchical.load_from_disk(zmatrix_fn)
+    assignments = hierarchical.get_assignments(k=k, cutoff_distance=d)
+    return assignments
     
+if __name__ == "__main__":
+    args = parser.parse_args()
     k = int(args.num_states) if args.num_states != 'none' else None
     d = float(args.cutoff_distance) if args.cutoff_distance != 'none' else None
+    arglib.die_if_path_exists(args.assignments)
     if k is None and d is None:
         logger.error('You need to supply either a number of states or a cutoff distance')
         sys.exit(1)
     
-    arglib.die_if_path_exists(args.assignments)
-    
-    assignments = hierarchical_clustering_zmatrix.get_assignments(k=k, cutoff_distance=d)
-    
+    assignments = main(k, d, args.hierarchical_clustering_zmatrix)
     Serializer.SaveData(args.assignments, assignments)
     logger.info('Saved assignments to %s', args.assignments)
-    
-if __name__ == "__main__":
-    main()
 
