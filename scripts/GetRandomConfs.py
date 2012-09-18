@@ -22,7 +22,7 @@ from msmbuilder import Trajectory
 from msmbuilder import Project
 from msmbuilder import MSMLib
 from msmbuilder import arglib
-from msmbuilder import msmio
+from msmbuilder import io
 import logging
 logger = logging.getLogger(__name__)
 
@@ -105,9 +105,9 @@ Output default: XRandomConfs.lh5, where X=Number of Conformations.""")
             args.output = '%dRandomConfs.%s' % (args.conformations_per_state, args.format)
     
     try:
-        assignments = msmio.loadh(args.assignments, 'arr_0')
+        assignments = io.loadh(args.assignments, 'arr_0')
     except KeyError:
-       assignments = msmio.loadh(args.assignments, 'Data')
+       assignments = io.loadh(args.assignments, 'Data')
     project = Project.load_from(args.project)
     
     random_confs = run(project, assignments, args.conformations_per_state)

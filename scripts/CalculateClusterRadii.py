@@ -19,7 +19,7 @@
 
 import numpy as np
 from msmbuilder import arglib
-from msmbuilder import msmio
+import msmbuilder.io
 from msmbuilder.MSMLib import invert_assignments
 import logging
 logger = logging.getLogger(__name__)
@@ -79,11 +79,11 @@ generator, measured by what ever distance metric was used in assigning.""")
     arglib.die_if_path_exists(args.output)
     
     try:
-        assignments = msmio.loadh(args.assignments, 'arr_0')
-        distances =  msmio.loadh(args.distances, 'arr_0')
+        assignments = msmbuilder.io.loadh(args.assignments, 'arr_0')
+        distances =  msmbuilder.io.loadh(args.distances, 'arr_0')
     except KeyError:
-        assignments = msmio.loadh(args.assignments, 'Data')
-        distances =  msmio.loadh(args.distances, 'Data')
+        assignments = msmbuilder.io.loadh(args.assignments, 'Data')
+        distances =  msmbuilder.io.loadh(args.distances, 'Data')
         
     
     radii = main(assignments, distances)

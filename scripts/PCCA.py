@@ -21,7 +21,7 @@ import sys, os
 import scipy.io
 import numpy as np
 
-from msmbuilder import msmio
+import msmbuilder.io
 from msmbuilder import MSMLib
 from msmbuilder import lumping
 from msmbuilder import arglib
@@ -43,7 +43,7 @@ def run_pcca(num_macrostates, assignments, tProb, output_dir):
     MSMLib.apply_mapping_to_assignments(assignments, MAP)
 
     np.savetxt(MacroMapFn, MAP, "%d")
-    msmio.saveh(MacroAssignmentsFn, assignments)
+    msmbuilder.io.saveh(MacroAssignmentsFn, assignments)
     
     logger.info("Saved output to: %s, %s", MacroAssignmentsFn, MacroMapFn)
     
@@ -63,7 +63,7 @@ def run_pcca_plus(num_macrostates, assignments, tProb, output_dir, flux_cutoff=0
     np.savetxt(ChiFn, chi)
     np.savetxt(AFn, A)
     np.savetxt(MacroMapFn, MAP,"%d")
-    msmio.saveh(MacroAssignmentsFn, assignments)
+    msmbuilder.io.saveh(MacroAssignmentsFn, assignments)
     logger.info('Saved output to: %s, %s, %s, %s', ChiFn, AFn, MacroMapFn, MacroAssignmentsFn)
 
 
@@ -91,9 +91,9 @@ Output: MacroAssignments.h5, a new assignments HDF file, for the Macro MSM.""")
 
     # load args
     try:
-        assignments = msmio.loadh(args.assignments, 'arr_0')
+        assignments = msmbuilder.io.loadh(args.assignments, 'arr_0')
     except KeyError:
-        assignments = msmio.loadh(args.assignments, 'Data')
+        assignments = msmbuilder.io.loadh(args.assignments, 'Data')
 
     tProb = scipy.io.mmread(args.tProb)
     

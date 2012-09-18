@@ -5,7 +5,7 @@ import warnings
 from msmbuilder import arglib
 from msmbuilder import clustering
 from msmbuilder import Project
-from msmbuilder import msmio
+from msmbuilder import io
 from msmbuilder import Trajectory
 from msmbuilder.arglib import die_if_path_exists
 import logging
@@ -191,8 +191,8 @@ could stride a little at the begining, but its not recommended.""")
             
             logger.info('Since stride=1, Saving %s', args.assignments)
             logger.info('Since stride=1, Saving %s', args.distances)
-            msmio.saveh(args.assignments, assignments)
-            msmio.saveh(args.distances, distances)
+            io.saveh(args.assignments, assignments)
+            io.saveh(args.distances, distances)
 
 if __name__ == '__main__':
     args, metric = parser.parse_args()

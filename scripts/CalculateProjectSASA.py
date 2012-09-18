@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import numpy as np
-from msmbuilder import Trajectory, Project, arglib, msmio
+from msmbuilder import Trajectory, Project, arglib, io
 from msmbuilder.geometry import asa
 import logging
 logger = logging.getLogger(__name__)
@@ -79,4 +79,4 @@ if __name__ == '__main__':
 
     SASA = run(project, atom_indices, args.traj_fn)
 
-    msmio.saveh(args.output, SASA)
+    io.saveh(args.output, SASA)

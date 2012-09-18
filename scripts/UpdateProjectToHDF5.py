@@ -22,7 +22,7 @@ import sys
 import numpy
 
 from msmbuilder import CreateMergedTrajectoriesFromFAH
-from msmbuilder import msmio
+from msmbuilder import io
 from msmbuilder import Project
 from msmbuilder import arglib
 import logging
@@ -92,7 +92,7 @@ def run(atomindicesFn, pdbFn, trajlistFn, datatype):
         i += 1
 
     # create assignments hdf5 file
-    msmio.saveh("Data/Assignments.h5", assigns)
+    io.saveh("Data/Assignments.h5", assigns)
 
     # load atom indices if present
     if atomindicesFn != None:

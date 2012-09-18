@@ -24,7 +24,7 @@ from collections import defaultdict
 import numpy as np
 import random
 import logging
-from msmbuilder import msmio, Project
+from msmbuilder import io, Project
 logger = logging.getLogger(__name__)
 
 def run(project, assignments, conformations_per_state, states, output_dir):
@@ -86,9 +86,9 @@ to use GetRandomConfs.py""")
         args.states = 'all'
 
     try:
-        assignments = msmio.loadh(args.assignments, 'arr_0')
+        assignments = io.loadh(args.assignments, 'arr_0')
     except KeyError:
-        assignments = msmio.loadh(args.assignments, 'Data')
+        assignments = io.loadh(args.assignments, 'Data')
     project = Project.load_from(args.project)
     
     run(project, assignments, args.conformations_per_state,

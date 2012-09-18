@@ -22,7 +22,7 @@ import numpy as np
 from msmbuilder.metrics import RMSD
 from msmbuilder import Project
 from msmbuilder import Trajectory
-from msmbuilder import msmio
+from msmbuilder import io
 from msmbuilder import arglib
 
 import logging
@@ -51,7 +51,7 @@ Please use CalculateProjectDistance.py
 """
     parser = arglib.ArgumentParser(description="""
 Calculate the RMSD between an input PDB and all conformations in your project.
-Output as a HDF5 file (load using msmio.loadh())
+Output as a HDF5 file (load using msmbuilder.io.loadh())
 """ + deprecationmessage)
     warnings.warn(deprecationmessage, DeprecationWarning)
     
@@ -72,5 +72,5 @@ Output as a HDF5 file (load using msmio.loadh())
 
     distances = run(project, pdb, atom_indices)
     
-    msmio.saveh(args.output, distances)
+    io.saveh(args.output, distances)
     logger.info('Saved to %s', args.output)

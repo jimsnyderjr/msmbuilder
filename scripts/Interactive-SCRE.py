@@ -4,7 +4,8 @@
 
 import os, sys
 import scipy.io
-from msmbuilder import msmio, MSMLib, SCRE, arglib
+import msmbuilder.io
+from msmbuilder import MSMLib, SCRE, arglib
 import numpy as np
 import string
 import matplotlib
@@ -89,9 +90,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        assignments = msmio.loadh(args.assignments, 'arr_0')
+        assignments = msmbuilder.io.loadh(args.assignments, 'arr_0')
     except KeyError:
-        assignments = msmio.loadh(args.assignments, 'Data')
+        assignments = msmbuilder.io.loadh(args.assignments, 'Data')
 
     K = run(assignments)
 

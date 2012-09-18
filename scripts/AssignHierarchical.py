@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import sys, os
-from msmbuilder import msmio
+import msmbuilder.io
 from msmbuilder.clustering import Hierarchical
 from msmbuilder import arglib
 import logging
@@ -43,7 +43,7 @@ def main():
     
     assignments = hierarchical_clustering_zmatrix.get_assignments(k=k, cutoff_distance=d)
     
-    msmio.saveh(args.assignments, assignments)
+    msmbuilder.io.saveh(args.assignments, assignments)
     logger.info('Saved assignments to %s', args.assignments)
     
 if __name__ == "__main__":

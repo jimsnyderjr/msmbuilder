@@ -22,7 +22,7 @@ import os
 import numpy
 
 from msmbuilder import MSMLib
-from msmbuilder import msmio
+from msmbuilder import io
 from msmbuilder import arglib
 from msmbuilder import msm_analysis
 
@@ -36,9 +36,9 @@ def run(MinLagtime, MaxLagtime, Interval, NumEigen, AssignmentsFn, symmetrize, n
     
     # Setup some model parameters
     try:
-        Assignments = msmio.loadh(AssignmentsFn, 'arr_0')
+        Assignments = io.loadh(AssignmentsFn, 'arr_0')
     except KeyError:
-        Assignments = msmio.loadh(AssignmentsFn, 'Data')
+        Assignments = io.loadh(AssignmentsFn, 'Data')
     
     NumStates = max(Assignments.flatten())+1
     if NumStates <= NumEigen-1: 

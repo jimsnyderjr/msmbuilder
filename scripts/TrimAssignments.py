@@ -19,7 +19,7 @@
 
 import sys
 import numpy as np
-from msmbuilder import msmio
+from msmbuilder import io
 from msmbuilder import arglib
 import logging
 logger = logging.getLogger(__name__)
@@ -56,13 +56,13 @@ Output: A trimmed assignments file (Assignments.Trimmed.h5).""")
     arglib.die_if_path_exists(args.output)
     
     try:
-        assignments = msmio.loadh(args.assignments, 'arr_0')
-        distances =  msmio.loadh(args.distances, 'arr_0')
+        assignments = io.loadh(args.assignments, 'arr_0')
+        distances =  io.loadh(args.distances, 'arr_0')
     except KeyError:
-        assignments = msmio.loadh(args.assignments, 'Data')
-        distances =  msmio.loadh(args.distances, 'Data')
+        assignments = io.loadh(args.assignments, 'Data')
+        distances =  io.loadh(args.distances, 'Data')
 
     trimmed = run(assignments, assignments_rmsd, args.rmsd_cutoff)
     
-    msmio.saveh(args.output, trimmed)
+    io.saveh(args.output, trimmed)
     logger.info('Saved output to %s', args.output)
