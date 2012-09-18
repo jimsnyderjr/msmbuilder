@@ -55,6 +55,9 @@ def configuration(parent_package='',top_path=None):
     config.add_subpackage('geometry',
                           subpackage_path='src/python/geometry')
 
+    config.add_subpackage('project',
+                          subpackage_path='src/python/project')
+
     # add asa extension
     # note this is wrapped using f2py, which
 	# is a little different that the other modules,

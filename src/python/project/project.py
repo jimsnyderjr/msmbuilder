@@ -19,10 +19,9 @@
 import os
 import numpy as np
 import yaml
-from msmbuilder import Trajectory
+from msmbuilder.trajectory import Trajectory
 from msmbuilder import msmio
 import logging
-from glob import glob
 from msmbuilder.utils import keynat
 logger = logging.getLogger('project')
 
@@ -33,22 +32,23 @@ class Project(object):
     mapping = {
         # the default name comes first, and alternate names
         # can come after
-        '_conf_filename': ['conf_filename', 'ConfFilename'],
-        '_n_trajs': ['n_trajs', 'NumTrajs'],
-        '_traj_lengths': ['traj_lengths', 'TrajLengths'],
-        '_traj_basename': ['traj_basename', 'TrajFileBaseName'],
-        '_traj_path': ['traj_path', 'TrajFilePath'],
-        '_traj_ext': ['traj_ext', 'TrajFileType']
+        '_conf_filename': 'conf_filename',
+        '_traj_lengths': 'traj_lengths',
+        '_traj_paths': 'traj_paths',
+        '_traj_converted_from': 'traj_converted_from',
+        '_traj_errors' : 'traj_errors',
     }
-    
+
     @property
     def conf_filename(self):
         """Filename of the project topology (PDB)"""
         return os.path.normpath(os.path.join(self._project_dir, self._conf_filename))
+
     @property
     def n_trajs(self):
         """Number of trajectories in the project"""
-        return self._n_trajs
+        return len(self._traj_lengths)
+
     @property
     def traj_lengths(self):
         """Length of each of the trajectories, in frames"""
@@ -79,26 +79,20 @@ class Project(object):
         """
         
         self._conf_filename = None
-        self._n_trajs = None
         self._traj_lengths = None
-        self._traj_basename = None
-        self._traj_ext = None
-        self._conf_filename = None
+        self._traj_paths = None
+        self._traj_converted_from = None
         self._project_dir = os.path.abspath(project_dir)
                 
         records_keys = set(records.keys())
         for key, val in self.mapping.iteritems():
-            match = list(set(val) & records_keys)
-            if match:
-                assert len(match) == 1, 'duplicate keys detected'
-                setattr(self, key, records[match[0]])
+            if val in records_keys:
+                setattr(self, key, records[val])
         
         for key in self.mapping.keys():
             if getattr(self, key) is None:
                 raise ValueError("attribute missing: %s" % key)
-        
-        self._traj_lengths = np.array(self._traj_lengths)
-        
+                
         if validate:
             self._validate()
         
@@ -161,24 +155,29 @@ class Project(object):
             dirname = os.path.abspath(os.path.dirname(filename_or_file.name))
             handle = filename_or_file
             own_fid = False
-            
-        records = {}
-        for key, val in self.mapping.iteritems():
-            records[val[0]] = sanitize_type(getattr(self, key))
         
         # somewhat complicated logic if the directory you're
         # saving in is different than the directory this
         # project references its paths from
-        
+
         # the point is that the when the file lists paths, those
         # paths are going to be interpreted as being with respect to
         # the directory that the file is in. So when the Project file
         # is being resaved (but the Trajectorys are not being moved)
         # then the paths need to change to compensate
+        
         relative = os.path.relpath(self._project_dir, os.path.dirname(filename_or_file))
-        records['traj_path'] = os.path.join(relative, records['traj_path'])
-        records['conf_filename'] = os.path.join(relative, records['conf_filename'])
 
+        records = {'trajs': []}
+        records['conf_filename'] = os.path.join(relative, self._conf_filename)
+        traj_paths = [os.path.join(relative, path) for path in self._traj_paths]
+        for i in xrange(len(traj_paths)):
+            records['trajs'].append({'id': i,
+                                    'path': traj_paths[i],
+                                    'converted_from': self._traj_converted_from[i],
+                                    'length': self._traj_lengths[i],
+                                    'errors': self._traj_errors[i]})
+        
         yaml.dump(records, handle)
         
         if own_fid:
@@ -194,15 +193,12 @@ class Project(object):
         return Trajectory.LoadTrajectoryFile(self.conf_filename)
 
     def traj_filename(self, traj_index):
-        return os.path.normpath(os.path.join(self._project_dir, self._traj_path,
-                self._traj_basename + str(traj_index) + self._traj_ext))
+        return os.path.normpath(os.path.join(self._project_dir, self._traj_paths[traj_index]))
 
     def _validate(self):
-        if not self._n_trajs == len(self.traj_lengths):
-            raise ValueError('traj lengths mismatch')
         if not os.path.exists(self.conf_filename):
             raise ValueError('conf does not exist: %s' % self.conf_filename)
-        for i in xrange(self.n_trajs):
+        for i in xrange(len(self._traj_paths)):
             if not os.path.exists(self.traj_filename(i)):
                 raise ValueError("%s does not exist" % self.traj_filename(i))
         if not np.all(self.traj_lengths == self._eval_traj_lengths()):
@@ -221,83 +217,6 @@ class Project(object):
         return traj_lengths
 
 
-
-class ProjectBuilder(object):
-    def __init__(self, input_traj_dir, input_traj_ext, conf_filename, **kwargs):
-        self.input_traj_dir = input_traj_dir
-        self.input_traj_ext = input_traj_ext
-        self.conf_filename = conf_filename
-        
-        self.output_traj_ext = '.lh5'
-        self.output_traj_basename = kwargs.pop('output_traj_basename', 'trj')
-        self.output_traj_dir = kwargs.pop('output_traj_dir', 'Trajectories')
-        self.stride = kwargs.pop('stride', 1)
-        
-        if len(kwargs) > 0:
-            raise ValueError('Unsupported arguments %s' % kwargs.keys())
-        if input_traj_ext not in ['.xtc', '.dcd']:
-            raise ValueError("Unsupported format")
-
-        self._check_out_dir()
-        self.project = self._convert()
-        
-    def get_project(self):
-        return self.project
-    
-    def _check_out_dir(self):
-        if not os.path.exists(self.output_traj_dir):
-            os.makedirs(self.output_traj_dir)
-        else:
-            raise IOError('%s already exists' % self.output_traj_dir)
-
-    def _convert(self):
-        traj_lengths = []
-        for i, file_list in enumerate(self._input_trajs()):
-            traj = self._load_traj(file_list)
-            traj["XYZList"] = traj["XYZList"][::self.stride]
-            lh5_fn = os.path.join(self.output_traj_dir, (self.output_traj_basename + str(i) + self.output_traj_ext))
-            traj.Save(lh5_fn)
-            traj_lengths.append(len(traj["XYZList"]))
-            
-            logger.info("%s, length %d, converted to %s", file_list, traj_lengths[-1], lh5_fn)
-
-
-        n_trajs = len(traj_lengths)
-        
-        if n_trajs == 0:
-            raise RuntimeError('No conversion jobs found!')
-
-        return Project({'conf_filename': self.conf_filename,
-                        'n_trajs': n_trajs,
-                        'traj_lengths': np.array(traj_lengths),
-                        'traj_basename': self.output_traj_basename,
-                        'traj_path': self.output_traj_dir,
-                        'traj_ext': self.output_traj_ext})
-    
-    def _input_trajs(self):
-        logger.warning("WARNING: Sorting trajectory files by numerical values in their names.")
-        logger.warning("Ensure that numbering is as intended.")
-
-        traj_dirs = glob(os.path.join(self.input_traj_dir, "*"))
-        traj_dirs.sort(key=keynat)
-        logger.info("Found %s traj dirs", len(traj_dirs))
-        for traj_dir in traj_dirs:
-            to_add = glob(traj_dir + '/*'+ self.input_traj_ext)
-            to_add.sort(key=keynat)
-            if to_add:
-                yield to_add
-
-    def _load_traj(self, file_list):
-        if self.input_traj_ext == '.xtc':
-            traj = Trajectory.LoadFromXTC(file_list, PDBFilename=self.conf_filename)
-        elif self.input_traj_ext == '.dcd':
-            traj = Trajectory.LoadFromXTC(file_list, PDBFilename=self.conf_filename)
-        else:
-            raise ValueError()
-        return traj
-
-
-
 def sanitize_type(obj):
     clean_types = [str, int, float, list, dict]
     if any(isinstance(obj, e) for e in clean_types):
@@ -306,5 +225,3 @@ def sanitize_type(obj):
         return obj.tolist()
     else:
         raise Exception('Cannot sanitize %s' % obj)
-    
-            
