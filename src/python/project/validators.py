@@ -3,7 +3,7 @@ import numpy as np
 from msmbuilder import Trajectory
 
 
-class ValidationError:
+class ValidationError(Exception):
     "All validation errors should subclass me"
     pass
 
@@ -30,7 +30,7 @@ class ExplosionValidator(object):
 
     def __call__(self, traj):
         ptraj = self.metric.prepare_trajectory(traj)
-        distances = self.metric.one_to_all(self._pconf, ptraj)
+        distances = self.metric.one_to_all(self._pconf, ptraj, 0)
         if np.any(distances > self.max_distance):
             i = np.where(distances > self.max_distance)[0][0]  # just get the first
             d = distances[i]

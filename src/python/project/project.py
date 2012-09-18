@@ -89,7 +89,7 @@ class Project(object):
 
         # if there are errors
         if np.any(self._traj_errors):
-            self._valid_traj_indices = np.array([i for i, e in enumerate(self._traj_errors) if e is None])
+            self._valid_traj_indices = np.array([i for i, e in enumerate(self._traj_errors) if e is None], dtype=int)
             n_errors = len([e for e in self._traj_errors if e is not None])
             logger.error('Errors detected in conversion: %d trajectories', n_errors)
 
@@ -223,6 +223,7 @@ class Project(object):
 
     def _validate(self):
         "Run some checks to ensure that this project is consistent"
+        
         if not os.path.exists(self.conf_filename):
             raise ValueError('conf does not exist: %s' % self.conf_filename)
         for i in xrange(self.n_trajs):
@@ -233,7 +234,9 @@ class Project(object):
             raise ValueError('Trajs length don\'t match what\'s on disk')
 
         # make sure all trajs have the same number of atoms
-        if not np.all(atoms == atoms[0]):
+        # note that it is possible that there are no valid trajectories, so atoms
+        # could be empty
+        if len(atoms) > 0 and not np.all(atoms == atoms[0]):
             raise ValueError('Not all trajs have the same number of atoms')
 
     def empty_traj(self):

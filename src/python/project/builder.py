@@ -44,6 +44,7 @@ class ProjectBuilder(object):
         self.input_traj_dir = input_traj_dir
         self.input_traj_ext = input_traj_ext
         self.conf_filename = conf_filename
+        self.project = None
 
         self.output_traj_ext = '.lh5'
         self.output_traj_basename = kwargs.pop('output_traj_basename', 'trj')
@@ -60,7 +61,6 @@ class ProjectBuilder(object):
             raise ValueError("Unsupported format")
 
         self._check_out_dir()
-        self.project = self._convert()
 
     def _validate_traj(self, traj):
         """
@@ -93,9 +93,12 @@ class ProjectBuilder(object):
         Examples
         --------
         >>> pb = ProjectBuilder('XTC', '.xtc', 'native.pdb')
+        >>> pb.convert()
         >>> pb.project == pb.get_project()
         True
         """
+        if self.project is None:
+            self.convert()
         return self.project
 
     def _check_out_dir(self):
@@ -105,7 +108,7 @@ class ProjectBuilder(object):
         else:
             raise IOError('%s already exists' % self.output_traj_dir)
 
-    def _convert(self):
+    def convert(self):
         """
         Main method for this class. Convert all of the trajectories into
         lh5 format and save them to self.output_traj_dir.
@@ -144,11 +147,11 @@ class ProjectBuilder(object):
         if len(traj_paths) == 0:
             raise RuntimeError('No conversion jobs found!')
 
-        return Project({'conf_filename': self.conf_filename,
-                        'traj_lengths': traj_lengths,
-                        'traj_paths': traj_paths,
-                        'traj_errors': traj_errors,
-                        'traj_converted_from': traj_converted_from})
+        self.project = Project({'conf_filename': self.conf_filename,
+                                'traj_lengths': traj_lengths,
+                                'traj_paths': traj_paths,
+                                'traj_errors': traj_errors,
+                                'traj_converted_from': traj_converted_from})
 
     def _input_trajs(self):
         logger.warning("WARNING: Sorting trajectory files by numerical values in their names.")

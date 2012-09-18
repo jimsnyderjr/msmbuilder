@@ -25,6 +25,7 @@ import cPickle
 
 from msmbuilder import FahProject
 from msmbuilder import project
+from msmbuilder.project import validators
 import logging
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,12 @@ def run(projectfn, PDBfn, InputDir, source, mingen, stride, rmsd_cutoff,
             itype='.xtc'
         
         pb = project.ProjectBuilder(InputDir, itype, PDBfn, stride=stride)
-        projectfn = pb.project.save(projectfn)
+        if rmsd_cutoff is not None:
+            # TODO: this is going to use ALL of the atom_indices, including hydrogen. This is
+            # probably not the desired functionality
+            validator = validators.RMSDExplosionValidator(PDBfn, max_rmsd=rmsd_cutoff, atom_indices=None)
+            pb.add_validator(validator)
+        projectfn = pb.get_project().save(projectfn)
 
     # If FAH option, seach through a RUNs/CLONEs/frameS.xtc data structure
     elif source == 'fah':
@@ -167,8 +173,8 @@ functionality.
     args = parser.parse_args()
     
     rmsd_cutoff = args.rmsd_cutoff
-    if rmsd_cutoff<=0.:
-        rmsd_cutoff=1000.
+    if rmsd_cutoff <= 0.0:
+        rmsd_cutoff = None
     else:
         logger.warning("Will discard any frame that is %f nm from the PDB conformation...", rmsd_cutoff)
     

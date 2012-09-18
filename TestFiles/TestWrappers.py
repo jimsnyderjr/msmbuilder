@@ -95,7 +95,7 @@ class TestWrappers(unittest.TestCase):
         os.chdir(WorkingDir)
         shutil.copy(PDBFn,"./")
                     #def run(projectfn, PDBfn, InputDir, source, mingen, stride, rmsd_cutoff,  parallel='None'):
-        ConvertDataToHDF.run(ProjectFn, PDBFn, TutorialDir+"/XTC", "file", 0, 1, 0,1000000)
+        ConvertDataToHDF.run(ProjectFn, PDBFn, TutorialDir+"/XTC", "file", 0, 1, None)
         P1 = Project.load_from(ProjectFn)
         
         r_P1 = Project.load_from(os.path.abspath(os.path.join('..', ReferenceDir, ProjectFn)))
