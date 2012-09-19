@@ -23,7 +23,7 @@ import scipy
 import numpy as np
 import multiprocessing
 import warnings
-from msmbuilder import msmio
+from msmbuilder import io
 from msmbuilder.utils import uneven_zip
 import logging
 logger = logging.getLogger('msm_analysis')
@@ -224,9 +224,9 @@ def get_implied_timescales_helper(args):
     assignments_fn, n_states, lag_time, n_implied_times, sliding_window, trimming, symmetrize = args
     
     try:
-        assignments = msmio.loadh(assignments_fn, 'arr_0')
+        assignments = io.loadh(assignments_fn, 'arr_0')
     except KeyError:
-        assignments = msmio.loadh(assignments_fn, 'Data')
+        assignments = io.loadh(assignments_fn, 'Data')
     
     try:
         from msmbuilder import MSMLib

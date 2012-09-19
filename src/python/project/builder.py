@@ -153,27 +153,38 @@ class ProjectBuilder(object):
         traj_converted_from = []
 
         for i, file_list in enumerate(self._input_trajs()):
-            traj = self._load_traj(file_list)
-            traj["XYZList"] = traj["XYZList"][::self.stride]
-            lh5_fn = os.path.join(self.output_traj_dir, (self.output_traj_basename + str(i) + self.output_traj_ext))
-            traj.Save(lh5_fn)
-
-            traj_lengths.append(len(traj["XYZList"]))
-            traj_paths.append(lh5_fn)
-            traj_converted_from.append(file_list)
-
+            
             error = None
+            
             try:
-                self._validate_traj(traj)
-                logger.info("%s, length %d, converted to %s", file_list, traj_lengths[-1], lh5_fn)
-            except ValidationError as e:
-                error = e
-                logger.error("%s, length %d, converted to %s with error '%s'", file_list, traj_lengths[-1], lh5_fn, e)
+                traj = self._load_traj(file_list)
+                traj["XYZList"] = traj["XYZList"][::self.stride]
+            except TypeError as e:
+                traj_errors.append(e)
+                logger.warning('Could not convert: %s (%s)', file_list, e)
+            else:
+                lh5_fn = os.path.join(self.output_traj_dir, 
+                                      (self.output_traj_basename + str(i) + self.output_traj_ext))
+                traj.Save(lh5_fn)
+                traj_lengths.append(len(traj["XYZList"]))
+                traj_paths.append(lh5_fn)
+                traj_converted_from.append(file_list)
+            
+                try:
+                    self._validate_traj(traj)
+                    logger.info("%s, length %d, converted to %s", 
+                                file_list, traj_lengths[-1], lh5_fn)
+                except ValidationError as e:
+                    error = e
+                    logger.error("%s, length %d, converted to %s with error '%s'", 
+                                 file_list, traj_lengths[-1], lh5_fn, e)
 
             traj_errors.append(error)
 
         if len(traj_paths) == 0:
+            os.rmdir(self.output_traj_dir)
             raise RuntimeError('No conversion jobs found!')
+
 
         self.project = Project({'conf_filename': self.conf_filename,
                                 'traj_lengths': traj_lengths,
@@ -213,3 +224,47 @@ class ProjectBuilder(object):
         else:
             raise ValueError()
         return traj
+
+
+class FahProjectBuilder(ProjectBuilder):
+    
+    def __init__(self, input_traj_dir, input_traj_ext, conf_filename, **kwargs):
+        
+        ProjectBuilder.__init__(self, input_traj_dir, input_traj_ext, 
+                                conf_filename, **kwargs)
+        
+    
+    
+    def _input_trajs(self):
+        
+        run_dirs = glob(os.path.join(self.input_traj_dir, "RUN*"))
+        run_dirs.sort(key=keynat)
+        logger.info("Found %d RUN dirs", len(run_dirs))
+        
+        for run_dir in run_dirs:
+            clone_dirs = glob(os.path.join(run_dir, "CLONE*"))
+            logger.info("%s: Found %d CLONE dirs", run_dir, len(clone_dirs))
+
+            for clone_dir in clone_dirs:
+                to_add = glob(clone_dir + '/*'+ self.input_traj_ext)
+                to_add.sort(key=keynat)
+                if to_add:
+                    yield to_add
+    
+    
+    def _load_traj(self, file_list):
+        try:
+            traj = super(FahProjectBuilder, self)._load_traj(file_list)
+        except (IOError, TypeError) as e:
+            try:
+                logger.warning('Could not all load frames in: %s\n attempting to'
+                               ' recover by ignoring final frame... (%s)', file_list, e)
+                traj = super(FahProjectBuilder, self)._load_traj(file_list[:-1])
+            except (IOError, TypeError) as e:
+                logger.warning('Recovery not possible (%s). Skipping.' % e)
+            else:
+                return traj
+        else:
+            return traj
+        
+

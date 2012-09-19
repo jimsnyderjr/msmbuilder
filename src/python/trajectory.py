@@ -25,7 +25,7 @@ import tables
 import numpy as np
 
 from msmbuilder import PDB
-from msmbuilder import msmio
+from msmbuilder import io
 from msmbuilder.Conformation import ConformationBaseClass, Conformation
 from msmbuilder import xtc
 from msmbuilder import dcd
@@ -188,7 +188,7 @@ class Trajectory(ConformationBaseClass):
         xyzlist = self.pop('XYZList')
         rounded = _ConvertToLossyIntegers(xyzlist, Precision)
         self['XYZList'] = rounded
-        msmio.saveh(Filename, **self)
+        io.saveh(Filename, **self)
         self['XYZList'] = xyzlist
         
     def SaveToXTC(self,Filename,Precision=default_precision):

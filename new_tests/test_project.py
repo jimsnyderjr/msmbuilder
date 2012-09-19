@@ -1,8 +1,14 @@
 # run tests on the project class
-from msmbuilder import Project
-import numpy.testing as npt
+
 import os
+
+from msmbuilder import Project
+
+import numpy.testing as npt
 from nose.tools import ok_, eq_
+
+from common import reference_dir, skip
+
 
 def test_project_1():
     'ensure that the counting of errors works right'
@@ -28,3 +34,17 @@ def test_project_2():
                'traj_paths': ['t0', 't1', 't2'],
                'traj_converted_from': [None, None, None]}
     proj = Project(records, validate=False)
+
+
+@skip
+def test_FahProjectBuilder():
+    
+    traj_dir = os.path.join(reference_dir(), 
+        "project_reference/project.builder/fah_style_data")
+    conf_filename = os.path.join(traj_dir, 'native.pdb')
+    
+    pb = Project.ProjectBuilder(traj_dir, '.xtc', conf_filename)
+    project = pb.get_project()
+    
+    
+    

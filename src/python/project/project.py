@@ -20,7 +20,7 @@ import os
 import numpy as np
 import yaml
 from msmbuilder.trajectory import Trajectory
-from msmbuilder import msmio
+from msmbuilder import io
 import logging
 from msmbuilder.utils import keynat
 logger = logging.getLogger('project')
@@ -143,7 +143,7 @@ class Project(object):
                     records['traj_converted_from'].append(trj['converted_from'])
 
         elif filename.endswith('.h5'):
-            ondisk = msmio.loadh(filename, deferred=False)
+            ondisk = io.loadh(filename, deferred=False)
             n_trajs = len(ondisk['TrajLengths'])
             records = {'conf_filename': str(ondisk['ConfFilename'][0]),
                        'traj_lengths': ondisk['TrajLengths'],

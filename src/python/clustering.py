@@ -13,6 +13,7 @@ import scipy.cluster.hierarchy
 
 from msmbuilder import metrics
 from msmbuilder import Trajectory
+from msmbuilder import io
 from msmbuilder.utils import uneven_zip, deprecated
 
 from multiprocessing import Pool
@@ -823,7 +824,7 @@ class Hierarchical(object):
         ------
         Exception if something already exists at `filename`
         """
-        msmio.saveh(filename, z_matrix=self.Z, traj_lengths=self.traj_lengths)
+        io.saveh(filename, z_matrix=self.Z, traj_lengths=self.traj_lengths)
     
     @classmethod
     def load_from_disk(cls, filename):

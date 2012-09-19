@@ -40,7 +40,7 @@ __all__ = [
 "MSMLib",
 "lumping", 
 "PDB", 
-'msmio'
+'io'
 "plot_graph", 
 "project", 
 "trajectory", 

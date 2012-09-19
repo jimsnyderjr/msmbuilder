@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tables
 import warnings
-from msmbuilder import msmio
+from msmbuilder import io
 from msmbuilder.trajectory import Trajectory
 import logging
 logger = logging.getLogger('assigning')
@@ -33,8 +33,8 @@ def _setup_containers(project, assignments_fn, distances_fn):
     """
 
     def save_container(filename, dtype):
-        msmio.saveh(filename, arr_0=-1*np.ones((project.n_trajs, np.max(project.traj_lengths)), dtype=dtype),
-                    completed_trajs=np.zeros((project.n_trajs), dtype=np.bool))
+        io.saveh(filename, arr_0=-1*np.ones((project.n_trajs, np.max(project.traj_lengths)), dtype=dtype),
+                 completed_trajs=np.zeros((project.n_trajs), dtype=np.bool))
 
     def check_container(filename):
         fh = tables.openFile(filename, 'r')
