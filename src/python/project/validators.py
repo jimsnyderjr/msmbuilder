@@ -94,3 +94,24 @@ class RMSDExplosionValidator(ExplosionValidator):
         from msmbuilder.metrics import RMSD
         metric = RMSD(atom_indices)
         super(RMSDExplosionValidator, self).__init__(structure_or_filename, metric, max_rmsd)
+
+
+class MinLengthValidator(object):
+    
+    
+    def __init__(self, min_length):
+        """
+        A validator that discards trajectories with two little data. Useful for
+        excluding trajectories that might be far too short to lend any kind of
+        significance to an MSM.
+        """
+        self.min_length = min_length
+        raise NotImplementedError()
+        
+    def __call__(self, traj):
+        if len(traj) * traj.dt < self.min_length: # traj.dt here needs the timestep
+            raise ExplosionError('trajectory shorter than requested cutoff: %f' % self.min_length)
+        
+        
+        
+        
