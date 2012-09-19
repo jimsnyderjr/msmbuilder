@@ -80,6 +80,34 @@ class ProjectBuilder(object):
             valilator(traj)
 
     def add_validator(self, validator):
+        """
+        Add a validator to the project builder
+        
+        Parameters
+        ----------
+        validator : callable
+        
+        Notes
+        -----
+        As the trajectories are being converted from their native format to
+        MSMBuilder's format (lh5), all of the registeted validtors will be run
+        against each trajectory. Validators should be callables like
+        functions or classes with a __call__ method that check a
+        trajectory. They are free to modify a trajectory as well, since it is
+        passed by reference to the validator.
+        
+        If a validator detects a problem with a trajectory, it should raise
+        a ValidationError -- that is, an error which subclasses
+        msmbuilder.project.validators.ValidationError. When the ProjectBuilder
+        detects a ValidationError, the error will be recorded in the project
+        file, but the execution will procdede as normal and the trajectory will
+        still be saved to disk. It will just be marked specially as "in error".
+        
+        In the current Project implementation, trajectories that are "in error"
+        will be ignored -- when using project.load_traj(), only the "valid"
+        trajectories will be returned, and project.n_trajs will only count
+        the valid trajectories.
+        """
         if not hasattr(validator, '__call__'):
             raise TypeError('Validator must be callable: %s' % validator)
         self._validators.append(validator)
