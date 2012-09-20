@@ -227,45 +227,45 @@ class ProjectBuilder(object):
 
 
 class FahProjectBuilder(ProjectBuilder):
-        """
-        Build a project using the classic FAH-style directory setup. E.g. looks
-        for data of the form
-        -- RUNs
-        ---- CLONEs
-        ------ frame0.xtc, frame1.xtc ....
-        
-        Contains a little more forgiving code than the standard ProjectBuilder,
-        specifically if a certain CLONE will not load, then we try to load again
-        excluding the last frame (which is often a FAH crash). This helps out
-        quite a bit.
+    """
+    Build a project using the classic FAH-style directory setup. E.g. looks
+    for data of the form
+    -- RUNs
+    ---- CLONEs
+    ------ frame0.xtc, frame1.xtc ....
+    
+    Contains a little more forgiving code than the standard ProjectBuilder,
+    specifically if a certain CLONE will not load, then we try to load again
+    excluding the last frame (which is often a FAH crash). This helps out
+    quite a bit.
 
-        Parameters
-        ----------
-        input_traj_dir : str
-            Root directory of the trajectory hierarchy. The trajectories should
-            actually be in input_traj_dir/<something>/{files}.
-        input_traj_ext : {'.xtc', '.dcd'}
-            Trajectory file format
-        conf_filename : str
-            Path to a pdb
+    Parameters
+    ----------
+    input_traj_dir : str
+        Root directory of the trajectory hierarchy. The trajectories should
+        actually be in input_traj_dir/<something>/{files}.
+    input_traj_ext : {'.xtc', '.dcd'}
+        Trajectory file format
+    conf_filename : str
+        Path to a pdb
 
-        Additional Parameters
-        ---------------------
-        stride : int
-            Stride the input data at this frequency
-        validators : [msmbuilder.project.Validator]
+    Additional Parameters
+    ---------------------
+    stride : int
+        Stride the input data at this frequency
+    validators : [msmbuilder.project.Validator]
 
-        Attributes
-        ----------
-        project : msmbuilder.Project
-            the built project
+    Attributes
+    ----------
+    project : msmbuilder.Project
+        the built project
 
-        Examples
-        --------
-        >>> pb = ProjectBuilder('XTC', '.xtc', 'native.pdb')
-        >>> pb.project.save('ProjectInfo.yaml')
-        
-        """
+    Examples
+    --------
+    >>> pb = ProjectBuilder('XTC', '.xtc', 'native.pdb')
+    >>> pb.project.save('ProjectInfo.yaml')
+    
+    """
     
 
     def _input_trajs(self):
