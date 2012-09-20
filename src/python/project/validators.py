@@ -32,7 +32,10 @@ class ExplosionError(ValidationError):
     pass
     
 class TooLittleDataError(ValidationError):
-
+    """ Gets called when a trajectory has too little data to be modelled """
+    pass
+    
+    
 # All of the validators must be callables. they should raise an ValidationError
 # when they fail, or else return None
 
