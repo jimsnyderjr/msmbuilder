@@ -20,6 +20,7 @@ the valid trajectories.
 """
 import numpy as np
 from msmbuilder import Trajectory
+from msmbuilder.metrics import RMSD
 
 
 class ValidationError(Exception):
@@ -95,8 +96,6 @@ class RMSDExplosionValidator(ExplosionValidator):
         atom_indices : np.array [ndim=1, dtype=int]
             The indices over which you want to measure RMSD
         """
-        # delay the import of RMSD
-        from msmbuilder.metrics import RMSD
         metric = RMSD(atom_indices)
         super(RMSDExplosionValidator, self).__init__(structure_or_filename, metric, max_rmsd)
 
@@ -135,4 +134,6 @@ class MinLengthValidator(object):
         
         
         
-        
+class TrajCenterer(object):
+    def __call__(self, traj):
+        RMSD.TheoData.centerConformations(traj["XYZList"])

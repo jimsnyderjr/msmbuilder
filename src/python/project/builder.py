@@ -218,7 +218,8 @@ class ProjectBuilder(object):
         """
 
         if self.input_traj_ext == '.xtc':
-            traj = Trajectory.LoadFromXTC(file_list, PDBFilename=self.conf_filename)
+            traj = Trajectory.LoadFromXTC(file_list, PDBFilename=self.conf_filename,
+                        discard_overlapping_frames=True)
         elif self.input_traj_ext == '.dcd':
             traj = Trajectory.LoadFromXTC(file_list, PDBFilename=self.conf_filename)
         else:
@@ -286,18 +287,27 @@ class FahProjectBuilder(ProjectBuilder):
     
     
     def _load_traj(self, file_list):
+        traj = None
+        
         try:
             traj = super(FahProjectBuilder, self)._load_traj(file_list)
-        except (IOError, TypeError) as e:
-            try:
-                logger.warning('Could not all load frames in: %s\n attempting to'
-                               ' recover by ignoring final frame... (%s)', file_list, e)
-                traj = super(FahProjectBuilder, self)._load_traj(file_list[:-1])
-            except (IOError, TypeError) as e:
-                logger.warning('Recovery not possible (%s). Skipping.' % e)
-            else:
-                return traj
-        else:
-            return traj
+        except IOError as e:
+            corrupted_files = True
+            n_corrupted = 1
+            logger.error("Some files appear to be corrupted")
+            while corrupted_files:
+                logger.error("Trying to recover by discarding the %d-th-to-last file", n_corrupted)
+                try:
+                    traj = super(FahProjectBuilder, self)._load_traj(file_list[:-n_corrupted])
+                except IOError:
+                    n_corrupted += 1
+                else:
+                    logger.error("That seemed to work")
+                    corrupted_files = False
         
+        if traj is None:
+            raise RuntimeError("Corrupted frames in %s, recovery impossible" % file_list)
+            
+        return traj
+    
 
