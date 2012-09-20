@@ -30,6 +30,8 @@ class ValidationError(Exception):
 class ExplosionError(ValidationError):
     "I get thrown by validators that check for explosion"
     pass
+    
+class TooLittleDataError(ValidationError):
 
 # All of the validators must be callables. they should raise an ValidationError
 # when they fail, or else return None
@@ -99,18 +101,34 @@ class RMSDExplosionValidator(ExplosionValidator):
 class MinLengthValidator(object):
     
     
-    def __init__(self, min_length):
+    def __init__(self, min_length, length_in_time_units=False):
         """
         A validator that discards trajectories with two little data. Useful for
         excluding trajectories that might be far too short to lend any kind of
         significance to an MSM.
+        
+        Parameters
+        ----------
+        min_length : float
+            The minimum length cutoff (default in units of frames, see below).
+            Trajectories shorter than this length will be discarded.
+        
+        length_in_time_units : bool
+            If set to true, will try to read length in real time, not frames.
+            Uses time ripped from the XTC files.
         """
         self.min_length = min_length
-        raise NotImplementedError()
+        self.length_in_time_units = length_in_time_units
         
     def __call__(self, traj):
-        if len(traj) * traj.dt < self.min_length: # traj.dt here needs the timestep
-            raise ExplosionError('trajectory shorter than requested cutoff: %f' % self.min_length)
+        
+        if self.length_in_time_units:
+            if len(traj) * traj.dt < self.min_length: # traj.dt here needs the timestep
+                raise NotImplementedError()
+                raise TooLittleDataError('trajectory shorter than requested cutoff: %f' % self.min_length)        
+        else:
+            if len(traj) < self.min_length: # traj.dt here needs the timestep
+                raise TooLittleDataError('trajectory shorter than requested cutoff: %f' % self.min_length)
         
         
         
