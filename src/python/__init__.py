@@ -54,6 +54,6 @@ __LOGGING_FORMAT = '%(asctime)s: %(levelname)s: %(message)s'
 logging.basicConfig(format=__LOGGING_FORMAT, level=logging.INFO, datefmt="%Y-%m-%d %H:%M:%S")
 
 import PDB
-from trajectory import Trajectory
+from Trajectory import Trajectory
 from Conformation import Conformation
 from project import Project

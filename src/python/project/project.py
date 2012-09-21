@@ -19,7 +19,7 @@
 import os
 import numpy as np
 import yaml
-from msmbuilder.trajectory import Trajectory
+from msmbuilder import Trajectory
 from msmbuilder import io
 import logging
 from msmbuilder.utils import keynat

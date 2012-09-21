@@ -3,7 +3,7 @@ import numpy as np
 import tables
 import warnings
 from msmbuilder import io
-from msmbuilder.trajectory import Trajectory
+from msmbuilder import Trajectory
 import logging
 logger = logging.getLogger('assigning')
 
