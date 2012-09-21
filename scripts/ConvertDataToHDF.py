@@ -47,7 +47,7 @@ def run(projectfn, PDBfn, InputDir, source, min_length, stride, rmsd_cutoff):
         itype = '.dcd' if 'dcd' in source else '.xtc'
         pb = ProjectBuilder(InputDir, input_traj_ext=itype, conf_filename=PDBfn, stride=stride)
     elif source == 'fah':
-        pb = FahProjectBuilder(InputDir, input_traj_ext=itype, conf_filename=PDBfn, stride=stride)
+        pb = FahProjectBuilder(InputDir, input_traj_ext='.xtc', conf_filename=PDBfn, stride=stride)
     else:
         raise ValueError("Invalid argument for source: %s" % source)
 

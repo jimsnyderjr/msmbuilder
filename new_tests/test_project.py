@@ -2,11 +2,12 @@
 
 import os
 
+from msmbuilder.project import FahProjectBuilder
 from msmbuilder import Project
 
 import numpy.testing as npt
 from nose.tools import ok_, eq_
-
+import tempfile, shutil
 from common import reference_dir, skip
 
 
@@ -36,15 +37,23 @@ def test_project_2():
     proj = Project(records, validate=False)
 
 
-@skip
 def test_FahProjectBuilder():
-    
+    cd = os.getcwd()
+    td = tempfile.mkdtemp()
+    os.chdir(td)
+
     traj_dir = os.path.join(reference_dir(), 
         "project_reference/project.builder/fah_style_data")
     conf_filename = os.path.join(traj_dir, 'native.pdb')
     
-    pb = Project.ProjectBuilder(traj_dir, '.xtc', conf_filename)
+    pb = FahProjectBuilder(traj_dir, '.xtc', conf_filename)
     project = pb.get_project()
+    eq_(project.n_trajs, 4)
+    npt.assert_array_equal(project.traj_lengths, [1001, 1001, 501, 1001])
+    os.chdir(cd)    
+    shutil.rmtree(td)
+
     
     
-    
+if __name__ == '__main__':
+    test_FahProjectBuilder()
